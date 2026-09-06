@@ -13,10 +13,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create learning sub-issues
+      - name: Create and connect learning sub-issues
         uses: actions/github-script@v7
         with:
           script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
             const parentIssueNumber = context.issue.number;
 
             const subIssueTitles = [
@@ -26,13 +28,35 @@ jobs:
             ];
 
             for (const title of subIssueTitles) {
+
+              // 1. 일반 Issue 생성
               const createdIssue = await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: title
+                owner,
+                repo,
+                title
               });
 
+              const childIssue = createdIssue.data;
+
               console.log(
-                `Created issue #${createdIssue.data.number}: ${title}`
+                `Created issue #${childIssue.number}: ${title}`
+              );
+
+              // 2. 방금 만든 Issue를 부모 Issue의 Sub-issue로 연결
+              await github.request(
+                'POST /repos/{owner}/{repo}/issues/{issue_number}/sub_issues',
+                {
+                  owner,
+                  repo,
+                  issue_number: parentIssueNumber,
+                  sub_issue_id: childIssue.id,
+                  headers: {
+                    'X-GitHub-Api-Version': '2026-03-10'
+                  }
+                }
+              );
+
+              console.log(
+                `Linked #${childIssue.number} to parent #${parentIssueNumber}`
               );
             }
