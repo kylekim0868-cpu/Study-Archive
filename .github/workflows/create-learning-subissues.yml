@@ -1,0 +1,38 @@
+name: Create learning sub-issues
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  create-subissues:
+    if: startsWith(github.event.issue.title, '[Algorithm]')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create learning sub-issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const parentIssueNumber = context.issue.number;
+
+            const subIssueTitles = [
+              '개념 공부 및 문제 분석',
+              '1차 코드 작성 (Self Solved)',
+              '코드 최적화 및 복습 정리'
+            ];
+
+            for (const title of subIssueTitles) {
+              const createdIssue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title
+              });
+
+              console.log(
+                `Created issue #${createdIssue.data.number}: ${title}`
+              );
+            }
