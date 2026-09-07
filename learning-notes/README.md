@@ -18,6 +18,14 @@
 
 ## 학습 기록
 
+### 04 BFS
+
+- 풀이 코드: [`week3/1. basic/04_bfs.py`](../week3/1.%20basic/04_bfs.py)
+- [문제점 기록](./문제모음집/04_bfs.md)
+- [설계 기록](./설계모음집/04_bfs.md)
+- 관련 개념
+  - [BFS](./개념모음집/algorithm_bfs.md)
+
 ### 06 DP 피보나치
 
 - 풀이 코드: [`week3/1. basic/06_dp_fibonacci.py`](../week3/1.%20basic/06_dp_fibonacci.py)
