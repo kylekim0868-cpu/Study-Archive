@@ -16,7 +16,18 @@
 4. 문제별 기록은 풀이 코드와 서로 연결한다.
 5. 개념 문서는 여러 문제에서 재사용하고 관련 문제를 링크한다.
 
-## 첫 학습 기록
+## 학습 기록
+
+### 06 DP 피보나치
+
+- 풀이 코드: [`week3/1. basic/06_dp_fibonacci.py`](../week3/1.%20basic/06_dp_fibonacci.py)
+- [문제점 기록](./문제모음집/06_dp_fibonacci.md)
+- [설계 기록](./설계모음집/06_dp_fibonacci.md)
+- 관련 개념
+  - [딕셔너리와 메모이제이션](./개념모음집/python_딕셔너리와_메모이제이션.md)
+  - [Top-down DP](./개념모음집/algorithm_top_down_dp.md)
+
+### 09 Greedy 미팅
 
 - 풀이 코드: [`week3/1. basic/09_greedy_meeting.py`](../week3/1.%20basic/09_greedy_meeting.py)
 - [문제점 기록](./문제모음집/09_greedy_meeting.md)

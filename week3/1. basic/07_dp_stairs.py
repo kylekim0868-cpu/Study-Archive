@@ -22,11 +22,6 @@
   4. 2+1+1
   5. 2+2
 
-힌트:
-- dp[i] = 계단 i까지 오르는 방법의 수
-- dp[i] = dp[i-1] + dp[i-2]
-- 작은 문제부터 차례로 계산
-
 DP 문제 풀이 순서:
 1. 부분 문제 정의: dp[i]가 무엇인지 정의
 2. 점화식 도출: dp[i]를 이전 값으로 표현
@@ -45,17 +40,27 @@ def climb_stairs(n):
     Returns:
         n번째 계단까지 오르는 방법의 수
     """
-    # TODO: 특별한 경우 처리
-    pass
+    """
+        설계)
+            - base line 설정
+                n = 1 -> return 1        # 재귀 종료
+            - 재귀 설정
+                1) 1칸씩 오를 경우:
+                2) 2칸씩 오를 경우:
+            - 2가지 경우의 수 병합
+            ? 메모이제이션은 어디서 어떻게 구현할 것인가?
+    """
+    dp_stairs = [0]*(n+1) # n번 째 계단을 오르는 가짓수
+
+    if n == 1:
+        return 1
+    dp_stairs[1] = 1
+    dp_stairs[2] = 2
+    if n >= 2:
+        for i in range(3, n+1):
+            dp_stairs[i] = dp_stairs[i-2] + dp_stairs[i-1]
     
-    
-    # TODO: dp 배열 생성 및 초기화
-    pass
-    
-    # TODO: 작은 문제부터 차례로 계산
-    pass
-    
-    return dp[n]
+    return dp_stairs[n]
 
 # 테스트 케이스
 if __name__ == "__main__":
