@@ -33,8 +33,9 @@
 """
 """
     설계)
-        1) 재귀적 생각 - 왼쪽으로 반복해서 내려가다가 자식 노드가 없다면 다시 올라가서 부모 노드를 만나면 오른쪽 탐색
-        2) 종료 지점 - node 자체가 없다면 종료
+        - 기준 노드를 기준으로 왼쪽/오른쪽 방향 설정
+        - node = None: 종료하고 이전 노드로 이동
+        - 그러면 result에 언제 append()?
 """
 class TreeNode:
     """이진 트리 노드"""
@@ -46,61 +47,49 @@ class TreeNode:
 def preorder(root):
     """전위 순회: 루트 → 왼쪽 → 오른쪽"""
     result = []
-    # node 객체 할당 코드 구현 방법을 모르겠네
     node = root
-    # base line: node가 비어 있다면 return
+
+    # 종료 지점
     if node == None:
-        return [] # "return" 은 None을 반환
-    # 현재 node를 result에 담기
-    result.append(node.value)
-    # 현재 node에서 왼쪽으로 이동
-    left_result = preorder(node.left) # 왼쪽으로 이동한 node의 result배열 반환
-    # 현재 node에서 오른쪽으로 이동
-    right_result = preorder(node.right) # 왼쪽으로 이동한 node의 result배열 반환
-    # 
-    result = result + left_result + right_result
+        return []
+    
+    left_pre = preorder(node.left) # 왼쪽 노드 재귀
+    right_pre = preorder(node.right) # 오른쪽 노드 재귀
+ 
+    result = [node.value]+ left_pre + right_pre
 
     return result
 
 def inorder(root):
     """중위 순회: 왼쪽 → 루트 → 오른쪽"""
     result = []
-    # node 객체 할당 코드 구현 방법을 모르겠네
     node = root
-    # base line: node가 비어 있다면 return
-    if node == None:
-        return [] # "return" 은 None을 반환
     
-    # 현재 node에서 왼쪽으로 이동
-    left_result = inorder(node.left) # 왼쪽으로 이동한 node의 result배열 반환
-    # 현재 node를 result에 담기
-    result.append(node.value)
-    # 현재 node에서 오른쪽으로 이동
-    right_result = inorder(node.right) # 왼쪽으로 이동한 node의 result배열 반환
-    # 
-    result = left_result + result + right_result 
-
+    # 종료 지점
+    if node == None:
+        return []
+        
+    left_pre = inorder(node.left) # 왼쪽 노드 재귀
+    right_pre = inorder(node.right) # 오른쪽 노드 재귀
+    
+    result = left_pre + [node.value] + right_pre
     
     return result
 
 def postorder(root):
     """후위 순회: 왼쪽 → 오른쪽 → 루트"""
     result = []
-# node 객체 할당 코드 구현 방법을 모르겠네
     node = root
-    # base line: node가 비어 있다면 return
-    if node == None:
-        return [] # "return" 은 None을 반환
     
-    # 현재 node에서 왼쪽으로 이동
-    left_result = postorder(node.left) # 왼쪽으로 이동한 node의 result배열 반환
-    # 현재 node에서 오른쪽으로 이동
-    right_result = postorder(node.right) # 왼쪽으로 이동한 node의 result배열 반환
-    # 현재 node를 result에 담기
-    result.append(node.value)
-    # 
-    result = left_result + right_result + result   
-   
+    # 종료 지점
+    if node == None:
+        return []
+        
+    left_pre = postorder(node.left) # 왼쪽 노드 재귀
+    right_pre = postorder(node.right) # 오른쪽 노드 재귀
+
+    result = left_pre + right_pre + [node.value]
+       
     return result
 
 # 테스트 케이스
