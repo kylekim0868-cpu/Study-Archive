@@ -41,7 +41,7 @@ queue = deque([start])
 
 ```python
 queue.popleft
-```
+```ㅗ
 
 괄호가 없으면 큐에서 값을 꺼내는 기능 자체를 가리킬 뿐 실행하지 않는다.
 
