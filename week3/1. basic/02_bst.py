@@ -1,6 +1,6 @@
 """
 [이진 검색 트리 - Binary Search Tree (BST)]
-
+ 
 문제 설명:
 - 이진 검색 트리에서 값을 검색합니다.
 - BST 특징: 왼쪽 자식 < 부모 < 오른쪽 자식
@@ -27,14 +27,6 @@
 찾는 값: 4 → True
 찾는 값: 6 → False
 """
-"""
-    설계)
-        - root를 기준 노드로 정한다
-        - base line : node == None이라면 return
-        - node == target : return False 중복일 경우는 존재하지 않기 때문에
-        - node < target : search_bst(root.lefat, target)  ------I 재귀과정
-        - node > target : search_bst(root.right, target) ------I 
-"""
 class TreeNode:
     def __init__(self, value):
         self.value = value
@@ -52,14 +44,20 @@ def search_bst(root, target):
     Returns:
         True/False
     """
-    if root == None:
+    # 현재 노드가 비어있다면 False 반환
+    if not root:
         return False
-    if root.value == target:
-        return True
-    if root.value < target:
-        return search_bst(root.right, target)
+
+    # target보다 작다면 왼쪽 서브트리로
     if root.value > target:
         return search_bst(root.left, target)
+    # target보다 크다면 오른쪽 서브트리로
+    if root.value < target:
+        return search_bst(root.right,target)
+    # target이 같다면 True반환
+    if root.value == target:
+        return True
+    
 # 테스트 케이스
 if __name__ == "__main__":
     # BST 생성:
