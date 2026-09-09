@@ -22,10 +22,6 @@
 1 → [0, 2]
 2 → [0, 1, 3]
 3 → [2]
-
-힌트:
-- 딕셔너리 사용: {정점: [연결된 정점들]}
-- 무방향 그래프는 양방향 추가
 """
 
 def create_graph(vertices, edges, directed=False):
@@ -40,35 +36,16 @@ def create_graph(vertices, edges, directed=False):
     Returns:
         그래프 딕셔너리
     """ 
-    """
-        설계)
-            1. 빈 그래프 초기화
-                -> 해시 테이블 초기화
-                    -> for문? 아니면 얕은 복사?
-                2. 무방향 그래프라면 인접 행렬로 해시 테이블 형태로 담고
-                    -> 형태 {
-                        0: [1,2],
-                        1: [0,2],
-                        ..
-                    }
-    """
-    # TODO: 빈 그래프 초기화
-    # 노드의 총 개수 = 간선의 개수 = graph
-    # None or 0을 삽입해 초기화
+    # graph 인접 리스트 방식으로 비어 있는 딕셔너리(Key, Value) 생성
     graph = {}
-    for i in range(vertices): # 정점 개수만큼 순회
-        graph[i] = [] # ❗️리스트 자료구조 특성상 배열이 초기화 되어 있지 않은 리스트에 추가할 수가 없다.
-    pass
-    
-    # TODO: 간선 추가
-    ## 간선 추가 (u에서 v로)
-    for u, v in edges:
-        graph[u].append(v)
-    ## 무방향 그래프면 반대 방향도 추가
-        if not directed: # 무방향 그래프라면
-            graph[v].append(u)
-    pass
-    
+    for i in range(vertices):
+        graph[i] = []
+    # edges(간선) 리스트 튜플 선회
+    for s,e in edges:
+        graph[s].append(e)
+        if not directed:
+            graph[e].append(s)
+
     return graph
 
 # 테스트 케이스
@@ -80,7 +57,7 @@ if __name__ == "__main__":
     print("=== 무방향 그래프 ===")
     graph = create_graph(vertices, edges, directed=False)
     for vertex, neighbors in graph.items():
-        print(f"{vertex} → {neighbors}")
+        print(f"{vertex} → {neighbors}") 
     print()
     
     # 테스트 케이스 2: 방향 그래프
