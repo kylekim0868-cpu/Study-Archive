@@ -56,13 +56,7 @@ fib(5) 계산
 
 DP가 필요한 경우:
 1. 최적 부분 구조: 부분 문제의 최적해로 전체 최적해 구성
-2. 중복 부분 문제: 같은 문제가 반복적으로 등장/
-
-응용:
-- 경로 찾기 문제
-- 최적화 문제
-- 조합 최적화
-- 자원 할당
+2. 중복 부분 문제: 같은 문제가 반복적으로 등장
 """
 
 def fibonacci_memo(n, memo=None):
@@ -76,36 +70,20 @@ def fibonacci_memo(n, memo=None):
     Returns:
         n번째 피보나치 수
     """
-    """
-        설계
-            - base line 설정: n=1 -> 1 / n=0 -> 0
-            - fib(5) -> fib(4) + fib(3)
-                fib(4) -> fib(3) + fib(2)
-                    => fib(3)을 2번 계산하는 중복이 발생 ? 이 부분을 어떻게 코드화
-                        ! n번 순회하면서 memo에 key=n, fibonaci_(n-2,memo)+fibnoacci_(n-1,memo) push?
-            - 재귀 설정: fibonacci_memo(n-2, memo) + fibonacci_memo(n-1, memo)
-            ! 위와 같이 설계한다면 기존 재귀와 동일
-    """
-    # memo값이 비어 있다면 초기화
-    if memo is None:
-        memo = {}
-    # base line 설정
-    if n == 1:
-        return 1
-    if n <= 0:
-        return 0
-    # 재귀함수 호출
-    if n in memo: # 메모이제이션
-        return memo[n]
-    memo[n] = fibonacci_memo(n - 2, memo) + fibonacci_memo(n - 1, memo)
-        
+    def fm(n, memo):
+        if memo is None:
+            memo = {}
 
-    return memo[n]
-    """
-        blocked
-            - AttributeError: 'dict' object has no attribute 'append'
-                memo는 딕셔너리인데 딕셔너리는 append를 지원하지 않는다.
-    """
+        if n == 0: return 0
+        if n == 1: return 1
+        if n >= 2:
+            if n not in memo:
+                memo[n] = fm(n-2, memo)+fm(n-1, memo)
+
+        return memo[n]
+
+    return fm(n, memo)
+
 # 테스트 케이스
 if __name__ == "__main__":
     # 테스트 케이스 1

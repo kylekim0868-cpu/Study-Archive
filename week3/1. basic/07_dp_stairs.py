@@ -40,28 +40,20 @@ def climb_stairs(n):
     Returns:
         n번째 계단까지 오르는 방법의 수
     """
-    """
-        설계)
-            - base line 설정
-                n = 1 -> return 1        # 재귀 종료
-            - 재귀 설정
-                1) 1칸씩 오를 경우:
-                2) 2칸씩 오를 경우:
-            - 2가지 경우의 수 병합
-            ? 메모이제이션은 어디서 어떻게 구현할 것인가?
-    """
-    dp_stairs = [0]*(n+1) # n번 째 계단을 오르는 가짓수
-
+    dp = []
+    for i in range(n+1):
+       dp.append(0)
     if n == 1:
         return 1
-    dp_stairs[1] = 1
-    dp_stairs[2] = 2
+
+
+    dp[1] = 1
+    dp[2] = 2
     if n >= 2:
         for i in range(3, n+1):
-            dp_stairs[i] = dp_stairs[i-2] + dp_stairs[i-1]
-    
-    return dp_stairs[n]
+            dp[i] = dp[i-2] + dp[i-1]
 
+    return dp[n]
 # 테스트 케이스
 if __name__ == "__main__":
     # 테스트 케이스 1
