@@ -35,19 +35,33 @@ def make_change_greedy(change, coins):
     Returns:
         (총 개수, {동전: 개수} 딕셔너리)
     """
+    # 딕셔너리 생성 - 거스를 경우의 수를 담은 동전의 종류와 갯수
     result = {}
-    total_coins = 0
+    # 동전 개수 count
+    count = 0
+    # 총 사용된 동전 개수 count
+    total = 0
+
+    # 동전 종류 순회 (500원일 때, 100원일 때, 50원일 때, 10원일 때..)
     for coin in coins:
+        # 거스름돈을 나눈 몫 = 동전 사용 수
         count = change//coin
+
+        # 동전 사용 수와 동전 종류를 result에 담기
         if count != 0:
-            result[coin] = count # 동전 종류에 따른 동전 사용 수를 딕셔너리에 추가
-        change = change - (coin*count) # 차액 
-        if change == 0: # 거스름돈을 전부 거슬러줬을 경우 동전 사용 끝
-            total_coins += count
+            result[coin] = count
+
+        change -= (coin*count)
+
+        total += count
+
+        # 거슬러줄 금액//동전 종류 중 하나 == 0 -> (전부 거슬러줬다는 이야기 = 더 이상의 동전을 사용X)
+        if (change%coin) == 0:
+            count = change//coin
+            total += count
             break
-        else:
-            total_coins += count
-    return total_coins, result
+
+    return total, result
 
 # 테스트 케이스
 if __name__ == "__main__":
