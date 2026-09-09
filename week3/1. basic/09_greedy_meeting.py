@@ -29,60 +29,30 @@ def select_meetings(meetings):
         (배정된 회의 개수, 선택된 회의 리스트)
     """
     """
-        selected = [(시작시간, 종료시간), (시작시간, 종료시간), ..] -> 보통 시작시간 == 종료시간 이렇게 들어오진 않기 때문에 예외 생각안해도 됨
-        설계)
-            - selected 배열 초기화
-            - meetings 배열 순회
-                - selected 배열 안의 종료시간 >= meetings 배열 안의 종료시간 : 다음 순회
-                - selecetd배열에 meetings 배열의 원소값 push
-        ! 위의 설계대로 진행한다면 일단 오류가 난다. 왜? 배열이 오름차순이 아니라 뒤죽박죽 엉켜 입력된다면? 모두 패스한다.
-            -> 그렇다면 이중 순회문을 사용하여 배열 안에서 기준 인접 원소를 비교하여 selected에 push하는 방향으로
-        !! !설계대로 해도 일단 된다 하더라도 시간복잡도 측면에서 굉장히 비효율적인거 같다. 다시 수정
-            - selecetd 배열 초기화
-            - meetings 튜플 순회
-                - for start, end in meetings: 
-                - selected.append((start,end)) # selected 배열에 push
-                - selected
-        !!! 이것도 아니야 첫 번째 배열로 간단하게 끝낼 수 있을 거 같아
-        !!!! 종료 시간 기준 오름차순 후 비교하면 훨씬 빠른 작업이 되겠네? 
-            -> 튜플의 정렬 원리를 이해해야할듯?
-                1) lambda
-                2) 함수 생성해서 반환
-                3) key
-                위의 3개의 방법을 사용해서 차순 정렬 가능!
+    설계)
+        - 오름차순 정렬을 종료시간 기준으로?
+        - 최대한 많은 회의를 배정하려면
+            1) 회의시간이 짧으면 되는데 -> 코드로 어떻게?
+        - 회의 시간을 오름차순을 정렬
+        - 튜플 리스트 순회하면서 앞 원소: (시작시간, 종료시간) 뒤 원소: (시작시간, 종료시간) -> i의 종료시간 < j의 시작시간 라면 결과에 반환
+            -> 회의시간이 겹치지 않기 때문에
     """
-    # selected = []
-    # n = len(meetings)
-    # meetings.sort(key=1)
-    # for i in range(0, n):
-    #     if [] in selected:
-    #         selected.append(meetings[i])
-    #     if selected[i][1] < meetings[i][0]:
-    #         selected[i].append(meetings[i])
-    #     else: 
-    #         selected.pop()
-    
-    # return len(selected), selected
-    selected = []
-    n = len(meetings)
-    def get_end(meetings):
-        return meetings[1]
-    meetings.sort(key=get_end)
-    for i in range(n):
-        if not selected:
-            selected.append(meetings[i])
-        if selected[-1][1] < meetings[i][0]:
-            selected.append(meetings[i])
-    """
-        blocked
-            1) selected에 빈값이 있기 때문에 51번 라인에서 에러가 난다. IndexError: list index out of range
-            Solving -> 첫 번째 순회에는 selected배열에 push
-            2) 1번의 작업으로 코드를 수정해도 같은 에러. IndexError: list index out of range
-            Solving -> append는 빈 배열에 적용되느 ㄴ메서드가 아니라 할당해주는 작업으로 수정해야한다.
-            3) 2번 해결방식은 내가 개념을 이해 못한 방식이라 틀렸다. append()는 빈 배열에 추가가 가능하다.
-            4) AttributeError: 'tuple' object has no attribute 'pop'
-    """
-    return len(selected), selected
+    # result - 결과값을 담을 배열 생성
+    result = []
+
+    # 종료시간(튜플의 2번째 원소) 기준으로 오름차순 정렬
+    for i in range(0, len(meetings)):
+        for j in range(i+1, len(meetings)):
+            if meetings[i][1] > meetings[j][1]:
+                meetings[i], meetings[j] = meetings[j], meetings[i]
+
+    # 튜플 리스트 순회 -> 앞 원소의 종료시간 > 뒤 원소의 시작시간: 결과값에 반환
+    for i in range(0, len(meetings)):
+        if not result:
+            result.append(meetings[i])
+        if result[-1][1] <= meetings[i][0]:
+            result.append(meetings[i])    
+    return len(result), result
 # 테스트 케이스
 if __name__ == "__main__":
     # 테스트 케이스 1
