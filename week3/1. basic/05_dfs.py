@@ -38,60 +38,39 @@ def dfs(graph, start, visited=None):
         방문 순서 리스트
     """
     """
-        설계)
-            - 시작정점 방문 처리
-            - 현재 노드와 연결된 이웃 확인
-            - 방문하지 않았다면 재귀함수 호출
-            - 연결된 이웃이 없다면 재귀함수 종료
-            - 호출 스택을 통해 직전 노드로 돌아가 다른 이웃 탐색
-            - 모든 재귀 호출이 종료되어 호출 스택이 비면 탐색 종료
+        1) Recursion
     """
-    """""""""""""""""""""""""""구현1) 재귀"""""""""""""""""""""""""""
-    """
-    if not visited: # None이면 return False
-        visited = []
+    # # 시작 지점 방문기록
+    # if not visited:
+    #     visited = []
+    # visited.append(start)
 
-    # 시작정점 방문 처리
-    visited.append(start)
+    # for g in graph[start]:
+    #     if g not in visited:
+    #         dfs(graph, g, visited) 
 
-    # # 현재 노드와 연결된 이웃 확인
-    # for neigh in graph:
-    #     if neigh not in visited: # graph 인접한 노드가 방문기록에 없다면 방문 처리
-    #         dfs(graph, neigh, visited) # graph와 방문스택의 최상단 정점와 visited 인자로 넘겨주어 재귀함수 호출
-
-    for i in range(len(graph[start])):
-        if graph[start][i] not in visited:
-            dfs(graph, graph[start][i], visited)
+    # return visited
     """
-    """""""""""""""""""""""""""구현2) 스택"""""""""""""""""""""""""""
+        2) Stack
     """
-        설계)
-            - 시작정점을 스택에 넣고
-            - 스택의 맨 위 정점을 꺼내고
-            - 아직 방문하지 않았다면 방문 처리
-            - 그 정점의 이웃을 스택에 넣고
-            - 스택이 빌 때까지 반복
-    """
-    # stack 초기화
+    # 스택으로 담을 자료구조 배열 생성
     stack = []
-    # visited 초기화
-    visited = []
-    # 시작정점 스택에 추가
+    # 스택에 start(시작 정점)을 넣고 시작
     stack.append(start)
+    visited = {}
+    visited = set()
+    visited.add(start)
 
+    # 기준 정점의 이웃한 정점을 스택에 쌓고 가장 직전에 방문한 이웃부터 차례로 방문 여부 판단
     while stack:
-        current = stack.pop()
-        # 꺼낸 스택 방문 기록
-        if current not in visited:
-            visited.append(current)
-        # 스택의 맨 위 정점 꺼낸다
-        for neigh in reversed(graph[current]):
+        last = stack.pop() # 가장 직전에 방문한 노드
+        for neigh in graph[last]:
             if neigh not in visited:
+                visited.add(neigh)
                 stack.append(neigh)
 
+    return list(visited)
 
-    
-    return visited
 
 # 테스트 케이스
 if __name__ == "__main__":
