@@ -1,0 +1,17 @@
+{
+    "name": "Study-Archive C Development",
+    "build": {
+        "dockerfile": "../data_structures_docker/.devcontainer/Dockerfile",
+        "context": "../data_structures_docker/.devcontainer"
+    },
+    "remoteUser": "jungle",
+    "customizations": {
+        "vscode": {
+            "extensions": ["ms-vscode.cpptools"],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "C_Cpp.default.compilerPath": "/usr/bin/gcc"
+            }
+        }
+    }
+}
