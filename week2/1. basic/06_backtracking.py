@@ -121,34 +121,31 @@ def combinations(n: int, k: int) -> list:
     """
     result = []  # 완성된 조합을 모아 둘 곳
 
+    # [막힌 부분 회상] 1부터 시작하는데 n은 어디에 쓰지?
+    # 이 문제에서는 후보가 1~n이므로 n은 고를 수 있는 가장 큰 숫자다.
+    # start는 이번 호출에서 살펴볼 첫 후보, n은 마지막 후보, k는 골라야 할 개수다.
+    # n=4, k=2라면 처음에는 1, 2, 3, 4가 후보이고,
+    # 1을 고른 다음 호출에서는 2, 3, 4가 후보다. 끝 숫자 n은 그대로다.
+    # 반복문은 '이번 자리의 후보를 하나씩 바꾸기', 재귀는 '다음 자리 고르기'를 맡는다.
+    # backtrack은 안쪽 함수라 바깥 combinations의 n과 k를 그대로 읽을 수 있다.
     def backtrack(start: int, current_combination: list) -> None:
-        """
-        재귀(백트래킹) 헬퍼 함수.
+      # k개를 골랐을 시 종료
+      # TODO: 돌아가기 전에 완성된 리스트의 복사본을 어디에 저장해야 할까?
+      if len(current_combination) == k:
+        result.append(current_combination[:])
+        return result
+      
+      # TODO: 지금은 start 하나만 고른다. start부터 n까지 후보를 바꾸려면?
+      # 후보 하나마다 아래의 '선택 → 재귀 탐색 → 취소'를 반복해 보자.
+      # 생각할 점: 다음 호출의 시작점은 현재 고른 후보와 어떤 관계일까? 바로 뒤에 있는 원소
+      for i in range(start, n+1):
+        current_combination.append(i)
+        backtrack(i+1, current_combination)
+        current_combination.pop()
 
-        Args:
-            start: 이번에 시도해볼 수 있는 가장 작은 숫자
-            current_combination: 지금까지 골라 둔 숫자들 (탐색 중)
-        """
-
-        # ──────────────────────────────────────────────────────────────────
-        # [Level 1] 종료 조건 (Base Case)
-        # ──────────────────────────────────────────────────────────────────
-        pass  
-        if len(current_combination) == k:
-            result.append(current_combination)
-            return
-        # ──────────────────────────────────────────────────────────────────
-        # [Level 2] 가지치기 반복문
-        # ──────────────────────────────────────────────────────────────────
-        for num in range(start, n+1):
-            # ──────────────────────────────────────────────────────────────
-            # [Level 3] 백트래킹 3단계
-            # ──────────────────────────────────────────────────────────────
-            current_combination.append(num)
-            backtrack(num+1, current_combination)
-            current_combination.pop()
-    # 처음 호출: 시작 숫자는 1, 지금까지 고른 숫자는 비어 있음
+      # 생각할 점: 결과를 result에 모은다면 이 반환값은 필요한가?
     backtrack(1, [])
+
     return result
 
 
