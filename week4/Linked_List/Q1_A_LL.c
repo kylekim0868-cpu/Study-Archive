@@ -20,7 +20,7 @@ typedef struct _linkedlist{
 	int size;
 	ListNode *head;
 } LinkedList;			// You should not change the definition of LinkedList
-
+ 
 
 ///////////////////////// function prototypes ////////////////////////////////////
 
@@ -91,6 +91,55 @@ int main()
 int insertSortedLL(LinkedList *ll, int item)
 {
 	/* add your code here */
+	// 문제 - 사용자에게 정수 하난를 입력받아, 오름차순으로 정렬된 연결 리스트에 알맞은 위치에 삽입하는 C함수 작성
+	ListNode *node;
+	node = malloc(sizeof(ListNode));
+
+	//- 새 값이 이미 존재하면 -1
+	if (node == NULL) {
+    	return -1;
+	}
+	node->next = NULL;
+	node->item = item;
+	
+	//- 빈 리스트면 첫 노드로 삽입
+	if (ll->size == 0){
+		ll->head = node;
+		ll->size++;
+		return 0;
+	}
+
+	//- 새 값이 head보다 작으면 맨 앞에 삽입
+	if (item < ll->head->item){
+		node->next = ll->head;
+		ll->head = node;
+		ll->size++;
+		return 0;
+		
+	}
+	//- 아니면 순회하면서 현재값 < 새값 < 다음값 위치를 찾음
+	//- 끝까지 갔는데 새 값이 가장 크면 맨 뒤에 삽입
+	//- 성공하면 삽입된 index 반환
+	ListNode *cur = ll->head;
+	int idx = 0;
+
+	//node가 끊어지지 않을때까지 반복하다가 끊어진다면 종료
+	while(cur != NULL){
+		if(cur->item == item){
+			free(node);
+			return -1;
+		}
+		if(cur->next == NULL || item < cur->next->item){
+			node->next = cur->next;
+			cur->next = node;
+
+			ll->size++;
+			return idx+1;
+		}
+
+		cur = cur->next;
+		idx++;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
