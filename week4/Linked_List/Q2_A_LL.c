@@ -104,6 +104,30 @@ int main()
 void alternateMergeLinkedList(LinkedList *ll1, LinkedList *ll2)
 {
     /* add your code here */
+	// ll1, ll2가 비어있다면
+	// ll2가 삽일될 연결 리스트라고 가정
+	ListNode *l1 = ll1->head;
+	ListNode *l2 = ll2->head;
+	ListNode *l1_temp, *l2_temp;
+
+	// l1, l2 둘 중 하나가 빈 리스트가 될 때까지 순회
+	while(l1 != NULL && l2 != NULL){
+		// ll1과 ll2의 현재 노드를 연결하기 전에 다음 노드를 저장
+		l1_temp = l1->next;
+		l2_temp = l2->next;
+		//ll2의 item을 떼서 ll1의 리스트 안에 삽입.
+		l2->next = l1->next;
+		l1->next = l2;
+		// ll1, ll2 다음 노드로 이동
+		l1 = l1_temp;
+		l2 = l2_temp;
+		// ll2->head가 새로운 2번째 노드를 바라보도록
+		ll2->head = l2;
+		// ll1 size 증가
+		ll1->size++;
+		// ll2 size 감소
+		ll2->size--;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
