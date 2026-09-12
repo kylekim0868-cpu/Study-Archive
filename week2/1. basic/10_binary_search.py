@@ -15,11 +15,6 @@
 예제:
 입력: arr = [1, 3, 5, 7, 9, 11, 13], target = 7
 출력: 3
-
-힌트:
-- left, right 포인터 사용
-- mid = (left + right) // 2
-- arr[mid]와 target 비교하여 범위 조정
 """
 
 def binary_search(arr, target):
@@ -34,52 +29,69 @@ def binary_search(arr, target):
         target의 인덱스 (없으면 -1)
     """
     """
-        아이디어
-            1) 배열의 길이만큼 반복문을 돌린다
-            2) 반복문 안에 target과 배열의 값의 일치 여부 조건을 넣는다.
-            3) 일치하면 원본 배열의 index 반환
-            4) 일치하지 않으면 -1 반환
-            -> 선형 탐색(단순 기본 문법 로직)
+        설계)
+            1) mid - 배열의 중간 idx 초기화
+                -> 이 값을 구하려면 시작/끝 idx 필요
+                    -> start = 0, end = 0
+            2) 반복문을 사용. 그 전에 분기를 나누어 mid구간을 순회할지 end구간을 순회할지
+                ! 이유: 정렬되어 있는 배열이기 때문에 중간값과 비교하여 시간복잡도를 줄일 수 있다. O(n) + O(n) -> O(n)
+                2-1) start ~ mid 구간 순회
+                    target과 일치한다면 target의 idx에 idx 할당 후 순회 종료
+                2-2) mid ~ end 구간 순회
+                    target과 일치한다면 target의 idx에 idx 할당 후 순회 종료
+            3) target이 없다면 결과 idx에 -1 반환
     """
-    """
-        ************************구현1************************
-    """
-    # n = len(arr)
-    # for i in range(0, n):
-    #     if target == arr[i]:
-    #         return i
+    # res_idx = 0
+    # start = 0
+    # end = len(arr)-1
+    # mid = (start+end)//2
+
+    # if target == arr[mid]:
+    #     return mid
+    # if target < arr[mid]:
+    #     for i in range(start, mid):
+    #         if target == arr[i]:
+    #             return i
+    # elif target > arr[mid]:
+    #     for i in range(mid, end+1):
+    #         if target == arr[i]:
+    #             return i
     # return -1
-    pass
     """
-        ************************구현1************************
-    """
-    """
-            이분 탐색 아이디어(조건: 무조건 정렬된 배열에 경우 가능)
-                1) 배열의 양 끝쪽 index를 left와 right에 할당
-                2) 양쪽의 중간인 mid = left+right // 2 할당
-                3) mid를 기준으로 반을 나누어 target과 비교
+    Trouble Shooting)
+        이분 탐색의 핵심을 제대로 이해하지 못했다. 결국 한 번만 반으로 나누면 시간복잡도는 줄어들지 않는다.
+        O(n) -> O(log n)으로 줄이기 위해서는 가능한 쪼갤 수 있는 범위까지 문제를 쪼갠다면 비교하면 된다.
+        결론: 재귀함수로 구현.
     """
     """
-        ************************구현2************************
+    재귀함수)
+        - 재귀를 구현할 내용: target과 비교할 한 개의 원소가 남을 때까지 반으로 나누기
+        - 종료지점: 원소의 배열 길이 == 1
+        - 어떻게 담고 반환할 것인가? 
+            target과 일치한다면 arr[i] 에서 i를 반환
+            !binary_search(쪼개진 배열, target)
     """
-    n = len(arr)
-    left = 0 # 배열의 가장 첫 번째 idx
-    right = n-1 # 배열의 가장 마지막 idx
-    mid = int((left+right)/2) #배열의 가운데 idx (배열이 홀수 개일 경우 float이기 때문에 int를 사용해 소숫점 뒤는 버림)
+    """
+    TroubleShooting2)
+        - 문제에서 binary_search() 인자는 정해져있기 때문에 새로운 보조 함수를 재귀함수로 사용!
+        - start > end라면 타겟을 찾지 못하고 배열이 비어있기 때문에 종료
+    """
+    start = 0
+    end = len(arr)-1
 
-    if target < arr[mid]: #target이 배열의 가운데 idx에 해당하는 숫자보다 작을 경우 -> range: 0~mid까지 반복하며 target과 일치하는지 찾기
-        for i in range(left, mid):
-            if target == arr[i]: return i
-    elif target > arr[mid]: #target이 배열의 가운데 idx에 해당하는 숫자보다 클 경우 -> range: mid~right까지 반복하며 target과 일치하는지 찾기
-        for i in range(mid, right):
-            if target == arr[i]: return i
-    else: return mid # target 배열의 mid 인덱스에 해당하는 값과 같을 경우 mid 반환
+    def search(start, end):
+        mid = (start+end)//2
+        if start > end:
+            return -1
+        if target == arr[mid]:
+            return mid
+        if target < arr[mid]:
+            return search(start, mid-1)
+        if target > arr[mid]:
+            return search(mid+1, end)
+    idx = search(start, end)
 
-    return -1
-    pass
-    """
-        ************************구현2************************
-    """
+    return idx
 # 테스트 케이스
 if __name__ == "__main__":
     # 테스트 케이스 1
