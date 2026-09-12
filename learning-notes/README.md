@@ -18,6 +18,12 @@
 
 ## 학습 기록
 
+### 01 이진 트리
+
+- 풀이 코드: [`week3/1. basic/01_binary_tree.py`](../week3/1.%20basic/01_binary_tree.py)
+- 관련 개념
+  - [이진 트리와 재귀 순회](./개념모음집/algorithm_binary_tree.md)
+
 ### 04 BFS
 
 - 풀이 코드: [`week3/1. basic/04_bfs.py`](../week3/1.%20basic/04_bfs.py)
