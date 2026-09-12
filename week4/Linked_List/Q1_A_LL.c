@@ -92,13 +92,15 @@ int insertSortedLL(LinkedList *ll, int item)
 {
 	/* add your code here */
 	// 문제 - 사용자에게 정수 하난를 입력받아, 오름차순으로 정렬된 연결 리스트에 알맞은 위치에 삽입하는 C함수 작성
-	ListNode *node;
-	node = malloc(sizeof(ListNode));
+	ListNode *node; // node라는 별칭의 ListNode자료형을 담은 포인터 변수 
+	node = malloc(sizeof(ListNode)); // 삽입할 노드의 메모리 할당
 
-	//- 새 값이 이미 존재하면 -1
+	// 메모리 할당 실패
 	if (node == NULL) {
     	return -1;
 	}
+	
+	// 삽입할 노드에 다음 가리킬 노드의 주소와 item 할당
 	node->next = NULL;
 	node->item = item;
 	
@@ -109,26 +111,28 @@ int insertSortedLL(LinkedList *ll, int item)
 		return 0;
 	}
 
-	//- 새 값이 head보다 작으면 맨 앞에 삽입
+	//- 삽입할 item이 head보다 작으면 맨 앞에 삽입 ex) node->item = 1, head->item = 2라면 head앞에 삽입
 	if (item < ll->head->item){
 		node->next = ll->head;
-		ll->head = node;
+		ll->head = node; // head가 node 앞에서 node를 가리키도록
 		ll->size++;
 		return 0;
 		
 	}
 	//- 아니면 순회하면서 현재값 < 새값 < 다음값 위치를 찾음
 	//- 끝까지 갔는데 새 값이 가장 크면 맨 뒤에 삽입
-	//- 성공하면 삽입된 index 반환
+	//- 성공하면 삽입된 결과index 반환
 	ListNode *cur = ll->head;
 	int idx = 0;
 
 	//node가 끊어지지 않을때까지 반복하다가 끊어진다면 종료
 	while(cur != NULL){
+		// 중복된 값이 있을 때 node의 메모리 해제 후 -1 반환
 		if(cur->item == item){
-			free(node);
+			free(node); 
 			return -1;
 		}
+		// 배열의 끝에 삽입되거나 가운데 삽입되었을 때
 		if(cur->next == NULL || item < cur->next->item){
 			node->next = cur->next;
 			cur->next = node;
@@ -137,9 +141,12 @@ int insertSortedLL(LinkedList *ll, int item)
 			return idx+1;
 		}
 
+		// 현재 포인터를 다음 포인터로 옮기기
 		cur = cur->next;
+		// idx도 옮기기
 		idx++;
 	}
+	return idx;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
