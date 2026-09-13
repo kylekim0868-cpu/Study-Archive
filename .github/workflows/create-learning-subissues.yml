@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   create-subissues:
-    if: startsWith(github.event.issue.title, '[Algorithm]')
+    if: contains(github.event.issue.title, '[Algorithm]')
     runs-on: ubuntu-latest
 
     steps:
