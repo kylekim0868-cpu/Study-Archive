@@ -80,6 +80,7 @@ def binary_search(arr, target):
     end = len(arr)-1
 
     def search(start, end):
+        # 무한 루프에 빠졌는데 손으로 직접 하나씩 대입해가면서 잘라주는 작업이 없다는 것을 이해했다
         mid = (start+end)//2
         if start > end:
             return -1
