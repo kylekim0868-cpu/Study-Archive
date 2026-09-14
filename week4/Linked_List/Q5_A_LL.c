@@ -103,6 +103,49 @@ int main()
 void frontBackSplitLinkedList(LinkedList *ll, LinkedList *resultFrontList, LinkedList *resultBackList)
 {
 	/* add your code here */
+	/*
+	설계)
+		- int ll_size, ll_f_size, ll_b_size; 각 ll의 사이즈
+		- ListNode *cur; (기존 리스트를 옮겨 다닐 포인터 cur)
+		- int mid = (ll_size)/2; size를 반으로 나눈 값
+		- mid가 반으로 나누어떨어지지 않는 경우 resultFrontList 사이즈 +1
+		- ll_f_size 순회하면서 insertNode를 사용하여 추가 (메모리는 어떻게?)
+		- ll_b_size 순회하면서 insertNode를 사용하여 추가 (메모리는 어떻게?)
+	*/
+	int ll_size, ll_f_size, ll_b_size, mid;
+	ListNode *ll_cur; // 기존 리스트의 포인터
+
+	// 기존 리스트 ll가 비어있을 경우 종료
+	if(ll_size == 0){
+		return;
+	}
+	ll_size = ll->size;
+	mid = (ll_size)/2;
+
+	// mid가 반으로 딱 나누어지지 않을 때, ll_f_size 사이즈 1을 더 준다
+	if((ll_size)%2 == 0){
+		ll_f_size = mid;
+		ll_b_size = mid;
+	}else{
+		ll_f_size = mid+1;
+		ll_b_size = mid;
+	}
+
+	// ll_cur ll->head로 초기화
+	ll_cur = ll->head;
+
+	// ll_f_size만큼 ll의 리스트를 resultFrontList에 할당
+	for(int i=0; i<ll_f_size; i++){
+	
+		insertNode(resultFrontList, i, ll_cur->item);
+		ll_cur = ll_cur->next;
+	}	
+
+	// ll_b_size만큼 ll의 리스트를 resultBackList에 할당
+	for(int i=0; i<ll_b_size; i++){
+		insertNode(resultBackList, i, ll_cur->item);
+		ll_cur = ll_cur->next;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
