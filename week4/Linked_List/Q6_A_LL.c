@@ -89,6 +89,78 @@ int main()
 int moveMaxToFront(ListNode **ptrHead)
 {
     /* add your code here */
+	/*
+	설계)
+		- int size;
+		- ListNode *cur = *prtHead; 
+		- ListNode *temp;
+		- while문으로 size를 구한다
+		- size만큼 순회
+			- 앞 뒤 item을 비교하여 앞의 item이 작다면 맨 뒤로 보내고
+			- 아니라면 그대로 유지 
+	*/
+	/*
+		1) 위의 설계대로 답을 구한다 하더라도 O(N2)이 되어 문제 조건 위배
+			-> size개수를 구하는 것이 아닌 다른 방법으로 접근
+			-> while문으로 해결?
+	*/
+	/* 접근 방법1) 실패*/
+	// LinkedList *ll;
+	// ListNode *cur = *ptrHead;
+
+	// int size = 0; // 입력받은 ll의 사이즈 0 초기화
+	// while(cur->next != NULL){
+	// 	size++;
+	// 	cur = cur->next;
+	// }
+
+	// printf("size: %d", size);
+	// return 0;
+	/*
+	설계2)
+		- while을 사용하여 cur가 NULL일 때까지
+			- 최대값이 담겨져 있는 node를 저장
+		- 최대값이 저장되어 있는 node 앞으로 이동시키기
+	*/
+	/* 접근 방법2) */
+	/*
+	TroubleShootind
+		1) max가 첫 번째일 경우 예외처리가 없다
+		2) ListNode *temp를 선언하고 초기화하지 않았기 때문에 segmentation fault 오류가 발생한다. 알 수 없는 메모리를 가리키기 때문에. 
+	*/
+	// 연결 리스트가 비어있다면 -1 반환
+	if(ptrHead == NULL){
+		return -1;
+	}
+	ListNode *cur = *ptrHead; // 움직일 노드 포인터
+	ListNode *prev = NULL;
+	ListNode *max = *ptrHead; // 일단 시작값이 최댓값이라고 가정! (-> 이게 중요)
+	ListNode *maxPrev = NULL; 
+
+	// 맨 뒤까지 순회하면서 max의 포인터 추출
+	while(cur != NULL){
+		// 현재 노드가 최대값보다 크다면
+		// max = cur, maxPrev = prev; 할당
+		if(cur->item > max->item){
+			max = cur;
+			maxPrev = prev;
+		}
+
+		prev = cur;
+		cur = cur->next;
+	}
+
+	cur = *ptrHead;
+	
+	// max 노드 첫 번째 노드라서 옮길 필요가 없다면
+	if(maxPrev == NULL){
+		return 0;
+	}else{
+		maxPrev->next = max->next;
+		max->next = cur;
+		*ptrHead = max;
+		return 0;
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////
