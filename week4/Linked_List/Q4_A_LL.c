@@ -87,6 +87,86 @@ int main()
 void moveEvenItemsToBack(LinkedList *ll)
 {
 	/* add your code here */
+	/*
+	설계)
+		- *prev (이전 포인터)
+		- *tail (꼬리 포인터)
+		- *cur (움직이면서 값을 이동시키는 포인터)
+		- ll이 비어있다면 종료
+
+		- int size; (인자로 받은 LinkedList의 사이즈)
+		- size만큼 순회하며 *tail의 포인터 위치를 할당한다
+		- size만큼 순회
+			- 홀수라면 cur+1
+			- 짝수라면 맨 뒤로 이동
+			- 이동 후 tail->NULL, cur->head
+	*/
+	/*
+		TroubleShooting
+			1) 첫 번째 item이 짝수일 경우 (2로 옮겼다고 가정해보면) 기존 리스트가 끊어지고 뒤로 옮긴 2만 남는다
+			->방법) 옮기기 전 연결되어 있는 다음 포인터도 저장해놔야한다! 
+			1-1) 여전히 기존 리스트가 끊어진다.
+			-> 방법) 옮기기 전 연결되어 있는 전,후 포인터를 전부 저장해놔야 끊어지지 않겠지! prev, temp(후)
+			1-2) 그래도 생기는 문제는 첫 노드를 뺄 때와 중간에서 뺄 때를 구분해야 한다. 
+				ex) 중간 : 1 2 5 4 -> 2를 뺀 상황에서 1이 5를 가리키도록 코드를 반영해야 안 끊어진다
+					첫 : 2 5 4 -> 2를 빼면 head가 5를 가리키도록
+			-> 방법) 분기처리하여 진행
+			1-3) 짝수가 무한으로 출력이 되는 원인: cur = prev; 2를 뺐는데 다시 2를 검사하는 과정이 반복됨
+				for문 자체는 N번 돌고 끝난 게 맞습니다. 그런데 그 N번이 도는 동안 '단방향 연결 리스트(LinkedList)의 구조'가 동그랗게 연결되는 순환 고리(Circular Loop / 무한 루프)로 바뀌어 버렸기 때문입니다.
+				이동시키고 나서 cur을 다음 노드의 포인터인 temp로 이동시키지 않고 이동 시킨 2를 다시 보게 했기 때문
+	*/
+	ListNode *cur;
+	ListNode *tail;
+	ListNode *prev;
+	ListNode *temp;
+
+	// *ll 비어 있다면 종료
+	if(ll->size == 0){
+		return;
+	}
+
+	cur = ll->head;
+	// *tail 포인터 위치 할당
+	for(int i=0; i<ll->size; i++){
+		// *ll 포인터를 이동시키며 맨 마지막에 위치했을 때의 포인터를 tail에 할당
+		if(cur->next == NULL){
+			tail = cur;
+		}
+		// *ll 포인터 이동
+		cur = cur->next;
+	}
+	// cur 맨 앞으로 초기화
+	cur = ll->head;
+
+	// size 순회하면서 
+	// 1) cur->item? cur->next?가 홀수일 경우 cur포인터를 다음으로 위치
+	// 2) cur가 짝수일 경우 맨 뒤로 이동
+	// 2-1) 이동 후 tail->NULL, cur->head 초기화
+	for(int i=0; i<ll->size; i++){
+		// cur에서 다음 노드를 가리키는 포인터 할당
+		temp = cur->next;
+
+		// cur가 짝수일 경우 맨 뒤로 이동
+		if((cur->item)%2 == 0){
+			// head에서 이동
+			// 중간에서 연결을 끊고 맨 뒤로 이동할 때
+			if(cur == ll->head){
+				ll->head = temp;
+			}else{ // 첫 노드가 짝수인 경우
+				prev->next = temp;
+			}
+			// cur item 맨 뒤로 이동
+			cur->next = NULL;
+			tail->next = cur;
+			tail = cur; // tail을 다시 맨 뒤로 보내기
+
+			cur = temp; // 연결되어 있는 다음 노드로 이동 ex) (2,5,4 -> 5,4,2) 5의 포인터로 이동한다는 내용
+ 		}else{
+			prev = cur;
+			cur = temp;
+		}
+	}
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
