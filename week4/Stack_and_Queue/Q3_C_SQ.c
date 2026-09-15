@@ -104,6 +104,61 @@ int main()
 int isStackPairwiseConsecutive(Stack *s)
 {
   /* add your code here */
+  /*
+	문제 조건 - push(), pop() 함수만 사용해라.
+	설계)
+		- 필요한 변수: 	s에서 꺼내 담을 배열 변수 정도?
+		- Stack이 비어 있다면 return 0; (종료)
+		- isEmptyStack을 사용하여 Stack이 빌 때까지
+			- case 1) cur과 cur->next의 차를 구해서 1이라면 cur = cur->next 이동
+			- case 2) 아니라면 return 0;
+			- case 3) cur 은 존재하는데 cur->next == NULL 이라면 (홀수 개) return 0;
+  */
+	/*
+		TroubleShooting)
+			1) 첫 번째 pop하는 과정에서 메모리 주소를 잘못 바라보는 느낌이 난다.
+				-> pop하고 이도할 필요가 없다. cur 다음 노드의 head로 옮겨주기 때문이다.
+			2) 그래도 pop()을 한번만 한다면 다음 한개가 남기 때문에 pop()을 2번 호출.(한 쌍이기 때문에)
+			3) (0, 1)쌍일 경우 return 0을 반환한다
+				-> 왜 이러지?
+	*/
+	/* 문제 조건을 어긴 코드 */
+	// ListNode *cur;
+	// cur = s->ll.head;
+
+	// while(!isEmptyStack(s)){
+	// 	if(cur && cur->next == NULL){
+	// 		return 0;
+	// 	}
+	// 	// 한 쌍의 차가 1이라면 pop후 cur 위치 옮기기
+	// 	if((cur->next->item) - (cur->item) == 1 || (cur->item) - (cur->next->item) == 11){
+	// 		pop(s);
+	// 		pop(s);
+	// 	}else{
+	// 		return 0;
+	// 	}
+	// }	
+	
+	// return 1;
+	/* 문제 조건을 적용한 코드*/
+	// 한 쌍의 데이터를 담을 int 변수 선언
+	int prev; 
+	int cur;
+	while(!isEmptyStack(s)){
+		prev = pop(s);
+		if(prev == INT_MIN){
+			return 0;
+		}
+		cur = pop(s);
+		if(cur == INT_MIN){
+			return 0;
+		}
+		if(abs(prev - cur) != 1){
+			return 0;
+		}
+	}
+	
+	return 1;
 }
 
 //////////////////////////////////////////////////////////////////////////////////
