@@ -117,6 +117,38 @@ int main()
 void createQueueFromLinkedList(LinkedList *ll, Queue *q)
 {
 	/* add your code here */
+	/*
+	설계)
+		- Queue에 데이터가 남아 있다면 Queue 초기화(Empty)
+		- LinkedList가 비어 있다면 return(종료)
+		- 필요한 변수 설정
+			-> 인자로 가능할 듯?
+		- while문을 사용하여 순차적으로 Queue에 삽입하기
+			- ll가 빌 때까지
+	*/
+	/*
+	TroubleShooting)
+		1) Cur을 이동시키지 않았기 때문에 무한루프에 빠지게 되었다
+		2) while조건에 리스트가 1개남았을 때는 1개를 작업하지 못한다 
+			-> cur != NULL (X) cur->next != NULL (O)
+	*/
+	ListNode *cur;
+	cur = ll->head; // cur ll의 헤드를 바라보도록 할당
+
+	// q에 데이터가 남아 있다면 모두 삭제(removeAllItemsFromQueue)
+	if(!isEmptyQueue(q)){
+		removeAllItemsFromQueue(q);
+	}
+
+	// LinkedList 자체가 비어 있다면
+	if(ll->head == NULL || ll->size == 0){
+		return;
+	}
+
+	while(cur != NULL ){
+		enqueue(q, cur->item);
+		cur = cur->next;
+	}
 }
 
 void removeOddValues(Queue *q)
