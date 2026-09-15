@@ -114,6 +114,23 @@ int main()
 void createStackFromLinkedList(LinkedList *ll, Stack *s)
 {
     /* add your code here */
+	/*
+	설계)
+		- s가 존재한다면 먼저 비운다
+		- while()문을 사용하여 Queue와 같이 Stack에 push한다
+	*/
+	ListNode *cur;
+
+	// isEmptyStack 매서드를 사용하여 0(False), 1(True) 반환 -> s가 빌 때까지 pop
+	while(!isEmptyStack(s)){
+		pop(s);
+	}
+
+	cur = ll->head;
+	while(cur != NULL){
+		push(s, cur->item);
+		cur = cur->next;
+	}
 }
 
 void removeEvenValues(Stack *s)
