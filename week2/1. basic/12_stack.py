@@ -29,26 +29,32 @@ def is_valid_parentheses(s):
     
     Returns:
         올바른 괄호면 True, 아니면 False
-    """ 
     """
-        아이디어
-            1) stack은 후입선출 개념의 자료구조. 예를 들면, 뷔페식으로 나오는 음식들. 가장 최근에 요리한 음식들을 손님께 내놓는다.
-            2) 올바른 괄호의 경우 - 여는 괄호와 닫는 괄호가 짝을 이룬다면 True
-            3) 잘못된 괄호의 경우 - 짝을 이루지 못하면 False
-            4) 괄호들을 넣을 임시 배열 생성
-            5) 입력받은 문자열 순회
-            6) 만약 (을 만난다면 append / )을 만난다면 pop을 진행
-            7) 문자열 순회가 끝난 후 스택이 비어 있어야 True
     """
-    tmp_is = []
+    설계)
+        - stack = []; s의 문자를 담을 stack 변수
+        - s만큼 순회
+            - stack이 비어 있다면 s의 문자 push
+            - s의 문자가 "("일 경우 push
+            - s의 문자가 ")"일 경우 + stack에 "("있다면 "("을 pop()해서 꺼낸다
+        - 순회가 끝나고도 문자가 남아있다면 False / 아니라면 True 
+    """
+    """
+    TroubleShooting)
+        - 예외 처리의 부재
+            - 만약 ")"를 먼저 만난다면 스택은 비어 있다. 이 상태에서 pop()을 호출하면 정의되지 않은 동작이 발생할 수 있기 때문에, pop()을 호출하기 전에 스택이 비어 있는지 확인해야 한다. (IndexError)
+    """
+    stack = []
+
     for chr in s:
-        if chr == "(":
-            tmp_is.append(chr)
-        elif chr == ")":
-            if not tmp_is: return False
-            tmp_is.pop()
-    if not tmp_is: return True 
-    else: return False
+        if (chr == "("):
+            stack.append(chr)
+        elif(chr == ")"):
+            # ) 차례에 stack이 비어 있다면 False로 반환하고 종료
+            if not stack:
+                return False
+            stack.pop()
+    return not stack
 # 테스트 케이스
 if __name__ == "__main__":
     # 테스트 케이스 1
