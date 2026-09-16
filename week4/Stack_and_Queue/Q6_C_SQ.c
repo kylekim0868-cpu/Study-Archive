@@ -111,7 +111,49 @@ int main()
 
 void removeUntil(Stack *s, int value)
 {
-/* add your code here */
+	/* add your code here */
+	/*
+		설계)
+			- 필요한 변수는? s, value, item(s에서 꺼내서 담을 int형 변수)
+			- 필요한 초기화는? X
+			- s가 비어 있다면 종료(예외 처리)
+			- while문을 사용하여 value를 만난다면 while 탈출 후 종료
+		TroubleShooting)
+			- while문의 조건을 잘못 이해했다. 또한 while문으로는 구현하기 어렵다.
+				이유는 while(item == value)로 조건을 설정하면 pop에서 꺼낸 다음에야 조건을 비교하기 때문이다.
+				ex) s = {4,5}라고 가정하고 value = 5라고 생각해보자.
+					item = 4일 때는 while문 탈출 불가능. -> pop -> item = 5
+					그리고 while문이 종료된다.
+			- for문도 잘못 작성되었다.
+				-> pop을 할 때마다 size가 줄어들기 때문에 오류가 발생
+			- peek매서드를 사용한다. stack의 가장 상단에 있는 head의 item을 꺼내오는 함수 
+	*/
+	int item = 0;
+
+	if(isEmptyStack(s)){
+		return;
+	}
+
+	// for(int i=0; i<s->ll.size; i++){
+	// 	if(item == value){
+	// 		break;
+	// 	}
+	// 	item = pop(s);
+	// }
+	// while(item == value){
+	// 	item = pop(s);
+	// 	if(item == value){
+	// 		break;
+	// 	}
+	// }
+	while(!isEmptyStack(s) && peek(s) != value){
+		if(item == value){
+			break;
+		}
+
+		item = pop(s);
+
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////////
