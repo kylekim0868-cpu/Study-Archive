@@ -98,7 +98,7 @@ int main()
 			break;
 		case 0:
 			removeAllItems(&(q.ll));
-			break;
+			break; 
 		default:
 			printf("Choice unknown;\n");
 			break;
@@ -112,7 +112,68 @@ int main()
 
 void reverse(Queue *q)
 {
-/* add your code here */
+	/* add your code here */
+	/*
+		설계)
+			- Stack 초기화
+			- Q에서 모든 원소를 꺼낸다
+			- s에 담는다
+			- s에서 pop사용해 q에 다시 담는다
+				=> Queue는 FIFO Stack은 LIFO구조기 때문에 위의 방식대로 설계하면 역순으로 데이터를 넣게 된다
+		TroubleShooting)
+			1) segmentation fault
+				-> 정확한 원인 파악을 위해 printf("여기까지 왔나?")를 사용해 step별로 파악해본다.
+					-> ! printf()도 줄바꿈 없이 출력하면 버퍼에 남을 수 있어서, 출력이 안 보인다는 사실만으로 실행 위치를 단정하기는 어렵다.
+				-> Stack *s; 이 부분이 문제가 있다.
+				-> 초기화를 해주지 않고 메모리 할당만 시켜놨다.
+				-> Stack *s = NULL;
+				-> s->ll.size, s->ll.head 이 코드에서 bus error가 발생
+			2) while(!isEmptyStack(&s)){
+					pop(&s);
+				}
+				-> 이 코드가 문제가 발생하는 부분이다. 초기화를 한다면 반복해서 pop를 할 필요도 없고 이 분기를 거치지 않는다.
+				해결) 
+					방법은 구조체 변수, 포인터 변수를 활용하는 2가지 방법이 존재한다.
+					Stack *s;는 메모리가 할당되지 않은 포인터
+					Stack *s = NULL;도 역참조하면 오류
+					Stack s = {0};처럼 실제 구조체 변수를 선언하는 것이 가장 간단한 해결책
+					포인터 변수로 유지하려면 malloc() 후 사용하고 마지막에 free()해야 함
+					현재 코드의 첫 번째 while (!isEmptyStack(s))는 초기화되지 않은 s를 사용하므로 제거해야 함
+
+	*/
+	// s 초기화 (2가지 방법)
+	// 1) 포인터 변수 활용
+	// 2) 구조체 변수 활용
+	// * 포인터 변수 *
+	// Stack *s = (Stack *)malloc(sizeof(*s));
+
+	// if(s == NULL){
+	// 	return;
+	// }
+
+	// * 구조체 변수 *
+	// Stack s;
+	// s.ll.head = NULL;
+	// s.ll.size = 0;
+	// s.ll.tail = NULL;
+	
+	Stack s = {0};
+	int v = 0;
+
+	while(!isEmptyStack(&s)){
+
+	}
+	// q 비워질 때까지 dequeue()를 사용하여 s(스택)에 담아준다
+	while(!isEmptyQueue(q)){
+		v = dequeue(q);
+		push(&s, v);
+	}
+	// s 비워질 때까지 enqueue()를 사용하여 s(스택)에서 꺼내서 담는다
+	while(!isEmptyStack(&s)){
+		v = pop(&s);
+		enqueue(q, v);
+	}
+	
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

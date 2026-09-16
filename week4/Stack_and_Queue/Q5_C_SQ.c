@@ -109,7 +109,25 @@ int main()
 
 void recursiveReverse(Queue *q)
 {
-/* add your code here */
+	/* add your code here */
+	/*
+		설계)
+			- 필요한 변수는? int item(dequeue한 원소를 담은 그릇), int count(횟수를 카운트할 변수)
+			- 초기화는? X
+			- 종료 지점은? q의 사이즈만큼 진행했다면
+			- 재귀 부분은? dequeue해서 다시 enqueue한다?		
+	*/
+	int item;
+
+	if(isEmptyQueue(q)){
+		return;
+	}
+
+	item = dequeue(q);
+	
+	recursiveReverse(q);
+
+	enqueue(q, item);
 }
 
 //////////////////////////////////////////////////////////////////
