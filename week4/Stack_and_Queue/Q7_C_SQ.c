@@ -8,6 +8,7 @@ Purpose: Implementing the required functions for Question 7 */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MIN_INT -1000
 
@@ -104,7 +105,77 @@ int main()
 ////////////////////////////////////////////////////////////
 int balanced(char *expression)
 {
-/* add your code here */
+	/* add your code here */
+	/*
+		설계)
+			- 필요한 변수는? Stack s, int length(expression의 길이를 담을)
+			- 초기화는? Stack s, int length = strlen(expression)
+				-> strlen() 함수를 사용하기 위해서는 헤더에 string.h 추가
+			- 예외 처리는? expression이 빈 값일 때 0 반환
+			- expression char 배열 순회
+				- {, [, ( 을 만났을 때 s에 push
+				- }, ], ) 을 만났을 때 s에서 pop
+			- s에 값이 남아있다면 return 0, 비어 있다면 return 1
+		TroubleShooting)
+			1) 올바르지 않은 짝임에도 1 반환이 된다.
+				-> 1을 반환하지 않았음에도 1을 반환한다는 것은 1이 고정값인가 본데
+			2) 예외 케이스를 생각하지 못함
+				-> {}[]}일 경우 1 반환
+				-> isEmptyStack 분기를 타지 않는다. -> 아니다! 탄다.
+				-> {]) 일 경우에는 잘못된 코드이다. 짝이 맞지 않는데 여는 괄호가 있다는 이유로만 pop한다.
+				-> 예외 케이스를 세 개로 짝지어 분기 처리
+	*/
+	Stack s = {0}; // s 초기화
+	int length = strlen(expression);
+
+	// expression이 비어 있다면
+	if(length == 0){
+		return 0;
+	}
+
+	// for(int i=0; i<length; i++){
+	// 	// {, [, ( 을 포함한다면 push1
+	// 	if(expression[i] == '{' || expression[i] == '[' || expression[i] == '('){
+	// 		push(&s, expression[i]);
+	// 	}
+	// 	// {, [, ( 을 포함한다면 pop
+	// 	if(expression[i] == '}' || expression[i] == ']' || expression[i] == ')'){
+	// 		// pop하기 전에 s가 비어 있다면 종료
+	// 		if(isEmptyStack(&s)){
+	// 			return 0;
+	// 		}
+	// 		if(s.ll.head->item == '{' || s.ll.head->item == '[' || s.ll.head->item == '('){
+	// 			pop(&s);
+	// 		}
+	// 	}
+		
+	// }
+	
+	for(int i=0; i<length; i++){
+		if(expression[i] == '{' || expression[i] == '(' || expression[i] == '['){
+			push(&s, expression[i]);
+		}
+		if(expression[i] == '}' || expression[i] == ')' || expression[i] == ']'){
+			if(isEmptyStack(&s)){
+				return 1;
+			}
+			if(s.ll.head->item == '{' && expression[i] == '}'){
+				pop(&s);
+			}else if(s.ll.head->item == '(' && expression[i] == ')'){
+				pop(&s);
+			}else if(s.ll.head->item == '[' && expression[i] == ']'){
+				pop(&s);
+			}else{
+				return 0;
+			}
+		}
+	}
+
+	if(isEmptyStack(&s)){
+		return 0;
+	}
+	return 1;
+	
 }
 
 ////////////////////////////////////////////////////////////
