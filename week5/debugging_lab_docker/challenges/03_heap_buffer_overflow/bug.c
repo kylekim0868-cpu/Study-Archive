@@ -47,25 +47,30 @@ typedef struct {
      *   tip 2. int 는 보통 32비트라 약 21억(2^31-1)에서 넘치고, 음수도 가능하다.
      *          원소가 그보다 많아지거나 cap*sizeof(int) 계산이 커지면 int 는 오버플로된다.
      *   생각해보기: 크기를 int 로 두면 어떤 버그가 생길 수 있을까?
+     *          -> 크기를 int로 관리하면 용량 계산이 INT_MAX를 넘을 때 부호 있는 정수 오버플로우가 발생한다. C에서는 이 결과가 정의되지 않으며, 실행 환경에서는 음수나 작은 값처럼 나타날 수도 있다. 
+     *             그 결과 필요한 크기보다 작은 버퍼를 할당한 뒤 원래의 큰 범위를 기준으로 데이터를 기록하면 heap buffer overflow가 발생할 수 있다.
      */
     size_t len;
     size_t cap;
 } IntList;
 
 static void list_init(IntList *l) {
+    // IntList 구조체를 가리키는 포인터 l이 IntList의 멤버 변수를 초기화하는 함수
     l->cap  = 8;
     l->len  = 0;
-    l->data = malloc(l->cap * sizeof(int));
+    l->data = malloc(l->cap * sizeof(int)); // data int형 배열의 동적 메모리 사이즈 = 32바이트 (최대 8개의 int자료형이 들어갈 공간)
     if (!l->data) { perror("malloc"); exit(1); }
 }
 
 static void list_ensure(IntList *l, size_t need) {
+    // 현재(옛날) 용량보다 작은 수의 사이즈를 받는다면 종료
     if (need <= l->cap) return;
 
     size_t newcap = l->cap ? l->cap * 2 : 8;
     while (newcap < need) newcap *= 2;
+    l->cap = newcap;
+    int *p = realloc(l->data, l->cap * sizeof(int)); // l->cap이 예전 사이즈를 바라보기 때문에 heap buffer overflow가 발생
 
-    int *p = realloc(l->data, l->cap * sizeof(int));
     if (!p) { perror("realloc"); free(l->data); exit(1); }
 
     l->data = p;
@@ -74,7 +79,7 @@ static void list_ensure(IntList *l, size_t need) {
 
 static void list_push(IntList *l, int x) {
     if (l->len == l->cap) list_ensure(l, l->cap + 1);
-    l->data[l->len++] = x;
+    l->data[l->len++] = x; // data[len]에 할당 후 len에 1 증가
 }
 
 static long long list_sum(const IntList *l) {
