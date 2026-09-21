@@ -56,10 +56,10 @@ typedef struct {
 } Directory;
 
 static Rec *rec_new(int id, const char *name) {
-    Rec *r = malloc(sizeof *r);
-    if (!r) { perror("malloc"); exit(1); }
-    r->id = id;
-    r->name = malloc(strlen(name) + 1);
+    Rec *r = malloc(sizeof *r); // 12바이트 크기의 Rec *r 구조체 생성
+    if (!r) { perror("malloc"); exit(1); } // 구조체가 비었다면 종료
+    r->id = id; // 생성된 구조체 id 초기화
+    r->name = malloc(strlen(name) + 1); // 생성된 구조체 name 힙 메모리 할당, strlen(name) +1을 해주는 이유는 문자열 끝에 "\0"이라는 NULL값이 들어가기 때문에
     if (!r->name) { perror("malloc"); exit(1); }
     strcpy(r->name, name);
     return r;
@@ -74,7 +74,7 @@ static void directory_add(Directory *d, int id, const char *name) {
 
 /* 이름 순 인덱스를 사전순으로 정렬(포인터만 재배치, 객체는 공유 그대로) */
 static void directory_sort_by_name(Directory *d) {
-    for (int i = 0; i < d->count; i++) {
+    for (int i = 0; i < d->count; i++) { // Directory의 길이만큼 순회
         for (int j = i + 1; j < d->count; j++) {
             if (strcmp(d->by_name[i]->name, d->by_name[j]->name) > 0) {
                 Rec *t = d->by_name[i];
@@ -101,17 +101,24 @@ static void directory_dump(Directory *d) {
 
 static void directory_free(Directory *d) {
     for (int i = 0; i < d->count; i++) {
+        fprintf(stderr, "free rec=%p (by_id)\n", d->by_id[i]->id, (void*)d->by_id[i]);
+        fprintf(stderr, "free rec=%p (by_name)\n", d->by_name[i]->id, (void*)d->by_name[i]);
         free(d->by_id[i]->name);
         free(d->by_id[i]);                 
     }
-    for (int i = 0; i < d->count; i++) {
-        free(d->by_name[i]);               
-    }
+    // for (int i = 0; i < d->count; i++) {
+    //     free(d->by_name[i]);               
+    // }
+    /*
+    * 단순하게 생각해서 위의 두 개의 다른 주소가 한 개의 객체를 바라보기 때문에 한 번만 해제를 해주게 되면 문제가 없어 보인다.
+    * 그렇게 단순하게 해결될 코드인가?
+    */ 
+
     d->count = 0;
 }
 
 int main(void) {
-    Directory dir = { .count = 0 };
+    Directory dir = { .count = 0 }; // dir의 count = 0으로 초기화
 
     directory_add(&dir, 3, "carol");
     directory_add(&dir, 1, "alice");
