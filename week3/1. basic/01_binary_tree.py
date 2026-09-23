@@ -32,10 +32,12 @@
 - 순회 순서만 다름                                                                                                                                                                                                                
 """
 """
-    설계)
-        - 기준 노드를 기준으로 왼쪽/오른쪽 방향 설정
-        - node = None: 종료하고 이전 노드로 이동
-        - 그러면 result에 언제 append()?
+설계)
+    - 종료지점은 node == None일 때 return []
+    - 전위: 현재 노드에서 왼쪽 노드 -> 오른쪽 노드
+    - 중위: 왼쪽 서브트리 노드(자식) -> 현재 노드 -> 오른쪽 노드
+    - 후위: 오른쪽 노드 -> 왼쪽 노드 -> 현재 노드
+    - 인자로는 node.left, node.right? 노드의 왼쪽, 오른쪽
 """
 class TreeNode:
     """이진 트리 노드"""
@@ -48,15 +50,14 @@ def preorder(root):
     """전위 순회: 루트 → 왼쪽 → 오른쪽"""
     result = []
     node = root
-
     # 종료 지점
     if node == None:
         return []
-    
-    left_pre = preorder(node.left) # 왼쪽 노드 재귀
-    right_pre = preorder(node.right) # 오른쪽 노드 재귀
- 
-    result = [node.value]+ left_pre + right_pre
+
+    left_pre = preorder(node.left)
+    right_pre = preorder(node.right)
+
+    result = [node.value] + left_pre + right_pre
 
     return result
 
@@ -64,15 +65,14 @@ def inorder(root):
     """중위 순회: 왼쪽 → 루트 → 오른쪽"""
     result = []
     node = root
-    
     # 종료 지점
     if node == None:
         return []
-        
-    left_pre = inorder(node.left) # 왼쪽 노드 재귀
-    right_pre = inorder(node.right) # 오른쪽 노드 재귀
-    
-    result = left_pre + [node.value] + right_pre
+
+    left_in = inorder(node.left)
+    right_in = inorder(node.right)
+
+    result = left_in + [node.value] + right_in
     
     return result
 
@@ -80,15 +80,14 @@ def postorder(root):
     """후위 순회: 왼쪽 → 오른쪽 → 루트"""
     result = []
     node = root
-    
     # 종료 지점
     if node == None:
         return []
-        
-    left_pre = postorder(node.left) # 왼쪽 노드 재귀
-    right_pre = postorder(node.right) # 오른쪽 노드 재귀
 
-    result = left_pre + right_pre + [node.value]
+    left_post = postorder(node.left)
+    right_post = postorder(node.right)
+
+    result = left_post + right_post + [node.value]
        
     return result
 
