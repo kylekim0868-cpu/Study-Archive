@@ -101,8 +101,6 @@ static void directory_dump(Directory *d) {
 
 static void directory_free(Directory *d) {
     for (int i = 0; i < d->count; i++) {
-        fprintf(stderr, "free rec=%p (by_id)\n", d->by_id[i]->id, (void*)d->by_id[i]);
-        fprintf(stderr, "free rec=%p (by_name)\n", d->by_name[i]->id, (void*)d->by_name[i]);
         free(d->by_id[i]->name);
         free(d->by_id[i]);                 
     }

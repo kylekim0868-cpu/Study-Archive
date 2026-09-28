@@ -48,21 +48,23 @@ typedef struct {
 
 /* 결과를 뷰에 채운다(포인터를 함수 경계 너머로 옮겨 -Wdangling 을 회피하는 형태) */
 static void view_set(LineView *out, char **arr, int n) {
-    out->lines = arr;
-    out->count = n;
+    out->lines = arr; // LineView 구조체의 lines 이중포인터에 split_lines의 지역 변수 parts[]의 주소를 바라본다
+    out->count = n; // LineView의 count = n 할당(여기서는 n=3=count)
 }
 
 static void split_lines(LineView *out, char *text) {
-    char *parts[MAX_LINES];              
+    // char *parts[MAX_LINES];              
     int n = 0;
     /* strtok는 새로 할당하지 않고, 넘겨받은 문자열 내부의 주소를 돌려준다. 
     * 따라서, strtok은 원본 버퍼를 제자리에서 수정한다. 
     */
     for (char *ln = strtok(text, "\n"); ln && n < MAX_LINES; ln = strtok(NULL, "\n"))
-        parts[n++] = ln;
+        out->lines[n++] = ln; // 'alpha'의 'a' / 'beta'의 'b' / 'gamma'의 'g'의 시작 주소를 각각 parts에 담는다.
 
-    view_set(out, parts, n);      
-
+    view_set(out, out->lines, n);
+    // 원인2) 지역변수 parts의 수명이 죽는다. 그러면 parts[]의 값은 살아있는데 그것을 바라보는 v.lines 포인터는 그 값을 가리킬 수가 없다.
+    // 해결2) parts의 배열을 담는다? LineView의 out에 담아준다?
+    //       main으로 parts[]을 반환하면 main에 존재하는 새로운 배열로 할당해주는 코드로 수정해야함
     /* TODO 상기 코드를 수정하여 결과를 호출자가 준 out 에 직접 채운다(값 반환 아님, 지역 주소 반환 아님). */       
 }
 
@@ -77,10 +79,28 @@ static void warm_stack(void) {
 
 int main(void) {
     char text[] = "alpha\nbeta\ngamma";
-
+    char *result[MAX_LINES]; 
+    // 초기화를 빈 값으로 한다면 checksum 크기가 다르게 나왔다 이유가 뭘까? 쓰레기값이 존재해서?
+    /*
+    * 원인
+        - char* result[] = {} 빈 공간을 할당한 주소가 1000이라고 가정하자. - text[]의 주소는 1001부터 시작한다고 가정하고.
+        - gdb print 명령어를 통해 2개의 변수의 메모리 주소를 비교하면 result[]가 앞선다. 그 이유는 읨의대로 컴파일러가 배치하기 때문이다.
+        - 그것보다 중요한 내용은 저렇게 앞서 있는 주소에서 포인터 변수이기 때문에 result[0]에 대입하여 쓰기 작업을 할 때 text 메모리 주소를 침범하게 된다.
+        - 그 과정에서 text[0]은 'F' 70, text[6]은 0x00 (0), text[11] 255를 반환하게 되면서 325라는 값이 나왔다. 정상이라면 text[0] -> 'a' 97 text[6] -> 'b' 98 text[11] 'g' 103
+        - 정상적인 출력 기대값은 298이다.
+      탐색 과정 (gdb 명령어)
+        - print &result, &text의 실제 메모리의 주소 확인 -> result가 text보다 앞에 있다는 것을 확인
+    *
+    */
     LineView v;
-    split_lines(&v, text);               
-    warm_stack();                        
+    v.lines = result;
+    split_lines(&v, text); // 궁금한게 결국 LineView의 lines -> parts -> arr를 바라보는데 그렇다면 이게 무엇이 문제인거지? warm_stack() 자기 스택 프레임에서 새로운 주소에서 배열을 만들고 할당하는 작업인데
+    // 원인1) split_lines의 스택 프레임에서 지역 변수를 메인 함수 변수에서도 바라보고 있기 때문에 수명이 종료된 배열을 바라보면 위험하다.
+    // 해결1) warm_stack()이 해당 주소를 사용하지 못하도록 근본적으로 매서드를 제거하는것? 근데 올바른 방법일까? 
+    //        아닐 거 같다. 지금은 크래쉬를 내려고 일부러 만든 함수이기 때문에 함수 자체를 코드에서 삭제하는 것도 방법이겠지만.
+    printf("%ld", sizeof(result));
+    printf("v,count: %d", v.count);
+    warm_stack();                       
 
     long checksum = 0;
     for (int i = 0; i < v.count; i++)
