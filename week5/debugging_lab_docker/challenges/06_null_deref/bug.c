@@ -41,19 +41,24 @@ typedef struct {
 } Headers;
 
 static char *skip_ws(char *s) {
-    while (*s == ' ' || *s == '\t') s++;
-    return s;
+    while (*s == ' ' || *s == '\t') s++; // 공백이 있거나 '\t'를 만나기 전까지 주소값을 이동
+    return s; // 만약 공백이 있거나 '\t'라면 주소 이동 없이 주소값 반환
 }
 
 static void parse_headers(char *text, Headers *h) {
-    for (char *line = strtok(text, "\n"); line != NULL; line = strtok(NULL, "\n")) {
-        char *colon = strchr(line, ':');   
+    //strtok(text, "\n") 함수란? text문자열을 "\n"기준으로 첫 번째 토큰의 시작 주소를 반환해준다. ex) strtok("apple\nbus", "\n") -> apple의 시작 주소를 반환해주고 \n -> \0 치환해주는 메소드
+    for (char *line = strtok(text, "\n"); line != NULL; line = strtok(NULL, "\n")) { // strtok으로 나뉜 line들 수만큼 반복 (다음 토큰이 없을 때까지 반복하는 조건)
+        char *colon = strchr(line, ':'); //':'의 주소를 찾아 반환
+        // 원인1) colon이 가리키는 것이 NULL포인터인데 *colon을 통해 역참조를 하려다보니 프로그램이 종료된다.
+        // 해결1) 해당 line은 넘기고 다음 line은 정상 작동하도록 continue 사용
+        if(!(colon)){
+            continue;
+        }
+        *colon = '\0'; // ':'을 '\0'으로 치환
+        char *key = line; // line에 "Host: example.com" 전체가 들어있지 않나 for문에서 \n 나눠주고 다른 작업은 없는데?
+        char *val = skip_ws(colon + 1); // 공백과 \t를 스킵하는 매서드를 호출하여 val에 다음 토큰이 시작하는 주소를 할당
 
-        *colon = '\0';                    
-        char *key = line;
-        char *val = skip_ws(colon + 1);
-
-        if (h->count < MAX_HEADERS) {
+        if (h->count < MAX_HEADERS) { // Headers 32개를 넘지 않는다면 구조체의 멤버 변수 각 배열 key, value값들에 저장하는 
             h->keys[h->count] = key;
             h->vals[h->count] = val;
             h->count++;
@@ -69,7 +74,7 @@ int main(void) {
         "Connection\n"                     
         "User-Agent: memdbg-cli\n";
 
-    Headers h = { .count = 0 };
+    Headers h = { .count = 0 }; // 지정 초기화자 '.'
     parse_headers(raw, &h);                
 
     printf("parsed %d headers\n", h.count);
