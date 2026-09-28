@@ -62,10 +62,18 @@
 
 /* 힙을 '더럽혀' 두어, 이후 같은 크기 할당이 쓰레기 값을 물려받게 만든다.
    (실무에서 흔한 '이전에 쓰고 free 한 청크의 잔여물' 상황을 재현) */
-static void dirty_heap(void) {
-    void *scratch = malloc(ROWS * sizeof(int *));
-    if (scratch) {
-        memset(scratch, 0xAB, ROWS * sizeof(int *));
+static void dirty_heap(void) { // dirty heap을 생성시키기 위한 함수
+    void *scratch = malloc(ROWS * sizeof(int *)); // void형의 scratch 포인터 변수에 32*4 바이트 크기의 동적 공간 할당
+    if (scratch) { // 공간이 할당되지 않았다면 
+        /* 
+            memset(a, b, c)
+                - 메모리의 지정한 범위를 같은 바이트 값으로 채우는 C 표준 라이브러리 함수.
+                - a: 시작 주소 - 어디부터 채울지
+                - b: 채울 값 - 각 바이트에 넣을 값
+                - c: 바이트 수 - 몇 바이트를 채울지
+                            
+        */
+        memset(scratch, 0xAB, ROWS * sizeof(int *)); // scratch 포인터의 시작 주소에 '0xAB'라는 값을 128바이트만큼 채운다는 의미
         free(scratch);              /* glibc tcache 로 반환 → 같은 크기 malloc 이 이 블록을
                                        LIFO 로 되돌려받는다(리눅스+glibc 고정이라 결정적). */
     }
@@ -73,13 +81,14 @@ static void dirty_heap(void) {
 
 static int **make_matrix(void) {
 
-    int **rows = malloc(ROWS * sizeof(int *));
-    if (!rows) { perror("malloc"); exit(1); }
+    int **rows = malloc(ROWS * sizeof(int *)); // dirty_heap 함수에 할당해준 크기만큼의 바이트를 **rows에 할당
+    if (!rows) { perror("malloc"); exit(1); } 
 
-    for (int i = 0; i < ROWS; i += 2) {
-        int *r = malloc(COLS * sizeof(int));
-        for (int j = 0; j < COLS; j++) r[j] = i * COLS + j;
-        rows[i] = r;
+    // 해결2) 혹은 짝수행에도 NULL값으로 초기화시켜주어 메모리에 접근할 수 있도록 조치
+    for (int i = 0; i < ROWS; i++) { // 짝수행에만 데이터를 초기화 해주는 순회작업. rows[1], rows[3]은 NULL(접근 X)
+        int *r = malloc(COLS * sizeof(int)); // 32개의 4바이트 크기의 열을 가리키는 포인터 변수 *r 생성
+        for (int j = 0; j < COLS; j++) r[j] = i * COLS + j; // 각 열의 데이터 초기화
+        rows[i] = r; // rows[i]에 r의 시작 주소를 값을 할당한다. 예를 들어 r = [0,1,2,3] 이라면 r[0]의 시작주소이겠지?
     }
     return rows;
 }
@@ -88,6 +97,8 @@ static long row_sum(int **rows, int nrows) {
     long total = 0;
     for (int i = 0; i < nrows; i++) {
         for (int j = 0; j < COLS; j++) {
+            // 원인1) i = 1, 3, 5 .. 홀수 행의 데이터에 접근하는 순간, 오류 발생
+            // 해결1) 반복문이 짝수행에만 접근하도록 j갱신을 j+=2로 수정
             total += rows[i][j];      
         }
     }
@@ -97,7 +108,7 @@ static long row_sum(int **rows, int nrows) {
 int main(void) {
     dirty_heap();
 
-    int **rows = make_matrix();
+    int **rows = make_matrix(); 
     printf("summing %dx%d matrix...\n", ROWS, COLS);
 
     long s = row_sum(rows, ROWS);     
