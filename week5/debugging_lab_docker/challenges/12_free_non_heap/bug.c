@@ -9,7 +9,7 @@
  *   필드들을 출력하고, 할당한 버퍼를 누수 없이 해제.
  *
  * [증상]
- *   각 필드 포인터는 "하나의 원본 버퍼 안"을 가리키는 내부(interior) 포인터다.
+ *   각 필드 포인터는 "하나의 원본 버퍼 안"을 가리키는 내부(interior) 포인터다.                                                                                                                                                                                                                                                                              
  *   (fields[0] 만 버퍼의 시작이고, 나머지는 중간을 가리킨다)
  *   정리 함수가 필드마다 free() 를 호출하면, 힙 청크의 "시작"이 아닌 내부 포인터를
  *   해제하려다 glibc "free(): invalid pointer" 로 abort. (또는 시작 포인터를 먼저
@@ -61,14 +61,23 @@ typedef struct {
 } Row;
 
 static void parse_row(Row *r, const char *csv) {
-    r->base = strdup(csv);       
+    r->base = strdup(csv); // strdup(csv): csv을 힙에 할당(19바이트 크기)하고 새로운 메모리(힙)에 복사된 문자열의 시작 주소를 반환하는 함수.
+    /*
+        문자열이 네 개처럼 보이지만, 메모리 할당은 한 번 일어났어. strtok()이 필드마다 새 공간을 할당한 것은 아니다.
+        [id\0name\0dept\0salary\0]
+         ↑(base)의 시작 주소를 담을 힙 메모리 공간을 새롭게 한번! 할당한다.
+             ↑     ↑     ↑
+         (base+3) 
+             i / n / d / s 각각의 문자열 시작 주소를 담는 것이 아닌
+    */
     if (!r->base) { perror("strdup"); exit(1); }
-    r->n = 0;
+    r->n = 0; // n을 0으로 초기화
 
-    for (char *tok = strtok(r->base, ","); tok && r->n < MAX_FIELDS;
+    for (char *tok = strtok(r->base, ","); tok && r->n < MAX_FIELDS; // strok() 매서드를 사용해 id/name/dept/salary 문자열 순회
          tok = strtok(NULL, ",")) {
+        // tok에 저장된 주소값을 fields의 원소에 복사한다
         r->fields[r->n++] = tok;  /* fields[0]=base, 나머지는 내부 포인터 */
-    }
+    } 
 }
 
 static void row_print(const Row *r) {
@@ -78,9 +87,15 @@ static void row_print(const Row *r) {
 }
 
 static void row_free(Row *r) {
-    for (int i = 0; i < r->n; i++) {
-        free(r->fields[i]);       
-    }
+    // 원인1) r->fields[0]에만 free()할 힙 시작 주소가 들어있다. 0을 제외한 인덱스에는 서로 다른 힙 영역에 존재하는 포인터 주소를 가리키기 때문에 free()하면 오류가 발생.
+    //      첫 번째 해제는 "id"에 해당하는 부분만 해제하는 게 아니야. name, dept, salary까지 포함한 전체 영역을 해제해. 따라서 나머지 필드 포인터도 모두 해제된 공간을 가리키는 댕글링 포인터가 된다.
+    //      어떤 오류? 유효하지 않은 포인터 해제!
+    // 해결1) for문 내부에 해당 r->fields[i]만 삭제하도록 조건문을 생성
+    //      if((r->fields[i] - r->base) == 0) free(r->fields[i]);
+    //      → 1. 위의 코드 문제점은 입력이 빈 문자열일 경우 필드 수가 0이어서 반복문이 실행되지 않는다. 그러면 메모리 해제를 할 수 없다. 누수 발생.
+    //      → 2. 첫 번째 반복 때 이미 메모리가 해제되었는데 조건문에서 뺄셈 연산을 동작하는 것은 유효하지 않다. 
+    // 해결2) fields 전체 순회가 아닌 힙 메모리의 시작 주소가 담긴 부분 한번만 free() 선언
+    free(r->base);
     r->n = 0;
 }
 
