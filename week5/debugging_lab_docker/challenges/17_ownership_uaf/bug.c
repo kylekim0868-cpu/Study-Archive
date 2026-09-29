@@ -72,31 +72,37 @@ static void msg_free(Msg *m) {
     free(m);
 }
 
+// 한 번 생성한 Msg의 주소를 두 배열에 저장
 static void publish(Broker *b, int id, const char *body) {
-    Msg *m = msg_new(id, body);
-    b->inbox[b->tail] = m;
-    b->tail = (b->tail + 1) % QCAP;
-    b->log[b->log_n++] = m;              
+    Msg *m = msg_new(id, body); // Msg *m 구조체 id(=1,2,3), body("hello", "world", "broker")의 값으로 초기화하며 객체 생성
+    b->inbox[b->tail] = m; // 같은 주소를 inbox 객체에 한번
+    b->tail = (b->tail + 1) % QCAP; // 모듈러의 법칙 사용. 다음 빈 자리를 가리키는 주소로 이동.
+    b->log[b->log_n++] = m; // 같은 주소를 log 객체에 한번
 }
 
 static void deliver(Broker *b, Subscriber sub) {
+    // b에 담아 있는 모든 구조체 순회
     while (b->head != b->tail) {
         Msg *m = b->inbox[b->head];
         b->head = (b->head + 1) % QCAP;
-        sub(m);                          
+        sub(m); // 해당 메시지 출력(id, body) 후 free
     }
 }
 
 static void on_message(Msg *m) {
     printf("recv #%d: %s\n", m->id, m->body);
     msg_free(m);                         
-}
+} 
 
 static void broker_shutdown(Broker *b) {
-    for (int i = 0; i < b->log_n; i++) {
-        msg_free(b->log[i]);             
+    // 원인1) deliver 메서드에서 이미 free를 한다. log 포인터도 해제하려고 하다 보니 double free 오류
+    // 해결1) for문 작동하지 못하도록 for문 삭제?
+    //      → 배달하지 않은 메시지가 남아 있을 경우 메모리 누수가 발생한다.
+    // 해결2) head tail사이의 미배달 메시지를 누수한다.
+    while(b->head != b->tail){
+        msg_free(b->inbox[b->head]);
+        b->head = (b->head + 1) % QCAP;
     }
-    b->log_n = 0;
 }
 
 int main(void) {
