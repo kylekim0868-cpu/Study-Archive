@@ -23,11 +23,6 @@
 출력:
 평균 점수: 85.0
 최고 점수: Bob (92점)
-
-힌트:
-- 딕셔너리 사용
-- 평균: sum(scores.values()) / len(scores)
-- 최고점: max(scores, key=scores.get)
 """
 
 def manage_grades(students):
@@ -41,21 +36,15 @@ def manage_grades(students):
         평균, 최고점 학생 이름, 최고점
     """
     """
-        개념 습득 전 아이디어
-            1) students의 길이만큼 반복
-            2) 모든 학생의 점수 총합 추출
-            3) 평균 = 총합/students길이
-            4) 최고점 = students.max()
-        개념 습득 후 아이디어
-            1) 평균 = sum(키가 점수인 모든 값들) / 길이
-            2) 최고점 = max(scores, key=scores.get)
+        설계)
+            - avg = (students 딕셔너리의 Value값들을 모두 더해 students의 길이로 나눈 값을 할당)
+            - max_stu_name = max(students의 Values)을 가지고 있는 학생 데이터를 할당
+            - max = max() 함수를 사용해 students의 Values중 가장 큰 값을 할당
     """
-    scores = students.values()
-    average = sum(scores)/len(students)
-    top_student = max(students, key=students.get) # max(key, value)
-    top_score = max(scores)
-
-    return average, top_student, top_score
+    avg = sum(students.values())/len(students)
+    max_stu_name = max(students, key=students.get)
+    max_score = max(students.values())
+    return avg, max_stu_name, max_score
 
 def find_student_score(students, name):
     """
