@@ -49,7 +49,8 @@ typedef struct {
 } Histogram;
 
 static void hist_grow(Histogram *h) {
-    h->cap = h->cap ? h->cap * 2 : 16;
+    h->cap = h->cap ? h->cap * 2 : 16; // 기존 cap이 0이면 16 아니면 기존 cap*2
+    // 원인1) realloc은 기존 메모리에 추가 할당공간을 만들어주는 함수이지만 새로운 주소의 배치할수도 기존 공간을 재활용할수도 있지만 큰 배열인 경우 이동할 수가 있다
     Bucket *p = realloc(h->data, h->cap * sizeof(Bucket));   /* 큰 배열은 이동(mmap 재배치) */
     if (!p) { perror("realloc"); free(h->data); exit(1); }
     h->data = p;
@@ -57,7 +58,7 @@ static void hist_grow(Histogram *h) {
 
 /* 키를 추가하고, 그 버킷의 주소를 돌려준다(성장이 일어날 수 있음). */
 static Bucket *hist_add(Histogram *h, int key) {
-    if (h->len == h->cap) hist_grow(h);
+    if (h->len == h->cap) hist_grow(h); // cap만큼 원소의 개수가 꽉찰때 배열의 성장이 일어난다.
     Bucket *b = &h->data[h->len++];
     b->key = key;
     b->count = 0;
@@ -75,14 +76,22 @@ int main(void) {
 
     for (int k = 0; k < 200000; k++) hist_add(&h, k);
 
-    Bucket *hot = &h.data[100000];
+    Bucket *hot = &h.data[100000]; // 처음 배열 성장 후 &h.data[100000] → 0xfffff77b1a10
     hot->count = 1;
-
+    printf("첫 번째 배열 성장 후:%p\n", (void*)&h.data[100000]);
     for (int k = 200000; k < 600000; k++) hist_add(&h, k);
+    printf("두 번째 배열 성장 후: %p\n", (void*)&h.data[100000]);
+    // 해결1) 기존 배열을 바라보고 있는 hot 포인터를 다시 새로운 배열 주소를 가리키도록 초기화(갱신)
+    //      → 위의 방법은 일시적인 방어 코드이다. 매번 성장할 때마다 하기의 코드처럼 갱신하는 코드를 추가해야한다는 불편함 존재.
+    // hot = &h.data[100000]; // 두 번째 배열 성장 후 &h.data[100000] → 0xfffff5fafa10
+    // hot->count += 1000;
+    // 해결2) 자주 변화하는 index를 변수로 삼아서 count에 접근한다.
+    size_t hot_idx = 100000;
+    if (hot_idx < h.len){
+        h.data[hot_idx].count += 1000;   
+        printf("hot=%ld total=%ld len=%zu\n", h.data[hot_idx].count, hist_total(&h), h.len); 
+    } 
 
-    hot->count += 1000;
-
-    printf("hot=%ld total=%ld len=%zu\n", hot->count, hist_total(&h), h.len);
-    free(h.data);
+    free(h.data); // realloc으로 할당한 메모리 해제
     return 0;
 }
