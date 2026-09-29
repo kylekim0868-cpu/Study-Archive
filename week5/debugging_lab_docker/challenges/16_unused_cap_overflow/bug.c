@@ -36,27 +36,35 @@
  *         if (*len + extra + flen + 1 > cap)   // +1 은 NUL
  *       넘치면 잘라 담거나(truncate) 오류로 처리하세요.
  */
+#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <string.h>
-
+#include <unistd.h>
 
 static void append_field(char *buf, size_t cap, size_t *len, const char *field, char sep) {
+    // 해결2) cap을 초과할 시 종료
+    // int extra = (*len > 0) ?  1 : 0;
+    // if(*len + extra + strlen(field) + 1 > cap){
+    //     return 0;
+    // }
     if (*len > 0) {
         buf[(*len)++] = sep;             
     }
-    size_t flen = strlen(field);
-    for (size_t i = 0; i < flen; i++) {
-        buf[(*len)++] = field[i];         
+    size_t flen = strlen(field); // flen에 field[i]에 해당되는 문자열 길이 할당 ex) fields[0] = "id=1042"이기 때문에 size_t flen = 8
+
+    // 해결1) cap을 사용하여 cap을 초과하면 자르거나 cap이 담을 수 있을 문자만 담는다. truncate()를 활용해 초과된 버퍼를 자른다.
+    for (size_t i = 0; i < flen && (*len < cap-1); i++) {
+        buf[(*len)++] = field[i]; // 문자열의 문자 수만큼 버퍼에 할당
     }
-    buf[*len] = '\0';
-    (void)cap;                            
+    buf[*len] = '\0'; // 끝 문자열에 '\0' 할당
+    // 원인1) cap을 인자로 받기만 하고 사용하지 않음
 }
 
 static void build_record(char *rec, size_t cap) {
     const char *fields[] = {
         "id=1042", "name=Jonathan", "department=Engineering", "role=maintainer",
     };
-    int n = (int)(sizeof(fields) / sizeof(fields[0]));
+    int n = (int)(sizeof(fields) / sizeof(fields[0])); // n = 4 (fields 배열의 총 사이즈 = 32바이트/ fields[0] 문자열 길이 = 8)
 
     size_t len = 0;
     rec[0] = '\0';
