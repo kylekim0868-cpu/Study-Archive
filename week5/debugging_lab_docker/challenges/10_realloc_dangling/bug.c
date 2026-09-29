@@ -52,16 +52,25 @@ static void eb_init(EditBuffer *e) {
     e->cap = 4;
     e->len = 0;
     e->undo_n = 0;
-    e->data = malloc(e->cap * sizeof(int));
+    e->data = malloc(e->cap * sizeof(int)); // (cap*4바이트) 크기만큼 힙 공간에 동적 할당 후 힙 공간의 시작 주소를 e->data에 저장
     if (!e->data) { perror("malloc"); exit(1); }
     /* data 바로 뒤에 놓이는 별도 할당. data 가 힙 맨 끝(top)이 아니게 되어
        이후 realloc 이 제자리 확장 대신 '이동'을 택하게 만든다(→ 옛 블록 해제). */
-    e->clipboard = malloc(e->cap * sizeof(int));
+    e->clipboard = malloc(e->cap * sizeof(int)); // (cap*4바이트) 크기만큼 힙 공간에 동적 할당 후 힙 공간의 시작 주소를 e->clipboard에 저장
+    // ★ e->data에 담긴 주소 vs e->clipboard를 비교해서 주소값의 위치를 파악해보자
     if (!e->clipboard) { perror("malloc"); exit(1); }
 }
 
+// 슬롯 최대 저장 횟수 = 8
 static void eb_snapshot(EditBuffer *e) {
-    if (e->undo_n < MAX_UNDO) e->undo[e->undo_n++] = e->data;
+    // 원인1) e->data인 원본의 시작 주소를 snapshot에 저장한다면 realloc을 통해 배열이 성장하면서 원본의 시작 주소를 다른 메모리 혹은 새로운 힙에 할당될 수가 있다
+    // 해결1) e->data의 주소와 값을 저장할 수 있게 malloc()+memcpy()를 활용하여 새로운 공간에 똑같이 복사하여 저장.
+    if (e->undo_n < MAX_UNDO) {
+        e->undo[e->undo_n] = e->clipboard;
+        int *snap = malloc(e->len * sizeof(int));
+        if(!snap) {perror("malloc"); exit(1);}
+        e->undo[e->undo_n++] = memcpy(snap, e->data, e->len*sizeof(int));
+    }
 }
 
 static void eb_grow(EditBuffer *e, size_t need) {
@@ -69,12 +78,12 @@ static void eb_grow(EditBuffer *e, size_t need) {
     while (nc < need) nc *= 2;
     int *p = realloc(e->data, nc * sizeof(int));   
     if (!p) { perror("realloc"); free(e->data); exit(1); }
-    e->data = p;                                   
+    e->data = p; // 원본 힙 공간의 시작 주소에 새로운 힙 공간의 시작 주소로 치환                                  
     e->cap = nc;
 }
 
 static void eb_push(EditBuffer *e, int v) {
-    if (e->len == e->cap) eb_grow(e, e->len + 1);
+    if (e->len == e->cap) eb_grow(e, e->len + 1); // data에 len만큼 데이터를 모두 저장할 시 배열 크기 확장
     e->data[e->len++] = v;
 }
 
