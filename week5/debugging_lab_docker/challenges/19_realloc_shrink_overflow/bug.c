@@ -46,8 +46,11 @@ typedef struct {
     size_t  cap;      
 } Signal;
 
+// Signal 구조체의 각 멤버 변수 초기화 작업
+// *samples 200000*8바이트 공간의 동적 메모리를 할당하고 힙 시작 주소를 가지고 있는 변수
+// len = cap = 2000000
 static void signal_init(Signal *s, size_t n) {
-    s->samples = malloc(n * sizeof(double));
+    s->samples = malloc(n * sizeof(double)); // 8*2000000의 공간을 할당해주고 그 공간의 시작 주소를 반환
     if (!s->samples) { perror("malloc"); exit(1); }
     s->len = s->cap = n;
     for (size_t i = 0; i < n; i++) s->samples[i] = (double)(i % 7) - 3.0;
@@ -55,15 +58,19 @@ static void signal_init(Signal *s, size_t n) {
 
 static void signal_trim(Signal *s, size_t keep) {
     if (keep > s->cap) return;
-    double *p = realloc(s->samples, keep * sizeof(double));
-    if (p) s->samples = p;
-    s->cap = keep;                 
+    double *p = realloc(s->samples, keep * sizeof(double)); // keep개의 double이 들어갈 크기로 변경을 요청하는 코드
+    if (p) {
+        s->samples = p; 
+        s->len = keep; // 해결1) 재할당된 메모리의 길이를 갱신
+        s->cap = keep; // cap 갱신도 재할당 성공 조건 안에 해야 정합성이 유지된다
+    } // p가 realloc에 실패했다면 원본 주소에 p포인터 값 저장
 }
 
+// signal_energy(): s->samples[i]의 제곱값의 총합을 e에 할당하고 반환해주는 함수
 static double signal_energy(const Signal *s) {
     double e = 0.0;
-    for (size_t i = 0; i < s->len; i++) {   
-        e += s->samples[i] * s->samples[i];
+    for (size_t i = 0; i < s->len; i++) {   // 원인1) s->samples의 배열은 크기가 줄었는데 s->len을 기준으로 반복되기 때문에 i가 유효 범위를 넘어서게 되어 
+        e += s->samples[i] * s->samples[i]; 
     }
     return e;
 }
@@ -81,3 +88,22 @@ int main(void) {
     free(s.samples);
     return 0;
 }
+        /*
+            가설) 
+                - i = 510일 때 왜 SIGSEGV 오류가 발생했을까?
+                - s->samples[i]의 길이가 총 509까지였을까? 틀린 가설: signal_init()을 파헤쳐 보면 s->samples에 할당된 공간은 엄청나게 크다. (16000000B)
+                - 위의 Signal 구조체의 samples 배열의 길이와 원소가 어떻게 채워져 있는지 확인이 필요해 보인다.
+                - main > signal_init()함수를 파헤쳐보자. 여기서 Signal 구조체의 멤버 객체를 초기화하는 것처럼 보인다.
+                - signal_trim()에 단서가 있을까? 
+                - signal_trim()이 무슨 작동을 하는지 분석해보자.
+                - p의 시작 주소값이 samples의 시작 주소와 같을까, realloc()으로 원본 주소인 samples의 시작 주소의 끝 공간에 붙여서 할당해줄까? (✘) rp의 시작주소는 samples와 같다
+                - p가 바라보는 힙 메모리를 B, s->samples가 바라보는 힙 메모리를 A라고 생각했을 때,
+                    B는 1600000+16B / A는 1600000 인건가?
+                - s->samples에 p의 주소값을 할당한다면 s->samples가 바라본 힙 메모리는 어떻게 되는거지?
+                - 위의 궁금증들을 전부 gdb로 확인해보자(검증)
+            검증)
+                - *p의 시작 주소값이 samples의 시작 주소와 같을까, realloc()으로 원본 주소인 samples의 시작 주소의 끝 공간에 붙여서 할당해줄까? 시작주소가 같다
+                - p가 바라보는 힙 메모리를 B, s->samples가 바라보는 힙 메모리를 A라고 생각했을 때,
+                    s->samples가 배열의 메모리가 줄어들었다. 그러면 A가 B보다 메모리가 컸을 때 뒤에 있는 메모리는 해제가 되는건가? 아니면 접근을 하지 못하는건가?
+                - s->samples에 p의 주소값을 할당한다면 s->samples가 바라본 힙 메모리는 어떻게 되는거지?
+        */ 
