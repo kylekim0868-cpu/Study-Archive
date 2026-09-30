@@ -38,14 +38,14 @@
 /* 필요한 총 바이트 수 = 모든 조각 길이 합 + 종료 문자 1 */
 static size_t joined_size(const char *const *parts, int n) {
     size_t total = 1;                        /* '\0' 자리 */
-    for (int i = 0; i < n - 1; i++) {        
+    for (int i = 0; i < n; i++) {        
         total += strlen(parts[i]);
     }
     return total;
 }
 
 static char *join(const char *const *parts, int n) {
-    size_t need = joined_size(parts, n);
+    size_t need = joined_size(parts, n); 
     char *out = malloc(need);                /* 마지막 조각 길이만큼 부족하게 할당됨 */
     if (!out) { perror("malloc"); exit(1); }
 
@@ -56,7 +56,7 @@ static char *join(const char *const *parts, int n) {
     }
     out[off] = '\0';
     return out;
-}
+}         
 
 int main(void) {
     
@@ -73,3 +73,20 @@ int main(void) {
     free(msg);
     return 0;
 }
+
+/*
+    가설)
+        - strcpy(out + off, parts[i]); 코드에서 크래시가 났다.
+        - bt로 추적해본 결과, parts=0xfffffffff468 / n=4일 때 크래시가 발생했고
+        - parts가 어떤 것을 담고 있는지 추적해봐야겠다. parts = {"GET ", "/indexpr.html", " HTTP/1.1\r\n\r\n", body} -> body는 첫 원소의 시작 주소값을 가지고 있음
+        - 왜 need=29일까? parts[0~2]까지의 길이를 모두 더하면 34가 나오는데 그러면 need=31? \r은 문자열로 취급 안하나? -> ✔︎ 해결했음, "index" 대신 "indexpr"이 들어가있음
+        - joined_size에서 n-1만큼만 malloc을 했는데 *join함수에서는 n만큼 부족한 공간을 사용하려고 하니 오류가 발생할 것이라고 생각된다.
+        - parts에는 원소가 n개가 있기 때문이다.
+        - need가 이 문제의 원인이고 해결 포인트이다. 인자로 받은 원소의 개수만큼 size를 동적할당해줘야 한다.
+    검증)
+        - joined_size -> n-1만큼 순회하면 need = 29
+                      -> n만큼 순회하면 need = 200028
+        - i=3에서 에러가 발생한다. 정확하게 strcpy()에서 에러가 발생한다.
+        - 만약 out[off] = '\0'; 끝 문자를 뜻하는 널을 갱신하지 않았다면 오류가 발생하지 않는다
+            → 마지막 널 문자 대입을 제거했을 때 크래시가 나지 않았다. 하지만 기존 할당량이 29바이트였다면 strcpy()에서 이미 범위 밖 쓰기가 발생하므로, 이것만으로 해결됐다고 볼 수 없다.
+*/
