@@ -1,0 +1,8 @@
+title,content
+[WIL] 작성,
+[C/Malloc Lab] 구현 - mm.c / mm_init,대상 파일: week6/malloc_lab_docker/malloc-lab/mm.c. 힙 초기화 구현.
+[C/Malloc Lab] 구현 - mm.c / mm_malloc,대상 파일: week6/malloc_lab_docker/malloc-lab/mm.c. 메모리 할당 구현.
+[C/Malloc Lab] 구현 - mm.c / mm_free,대상 파일: week6/malloc_lab_docker/malloc-lab/mm.c. 메모리 해제 구현.
+[C/Malloc Lab] 구현 - mm.c / mm_realloc,대상 파일: week6/malloc_lab_docker/malloc-lab/mm.c. 메모리 재할당 구현.
+[C/Malloc Lab] 확장 구현 - mm.c / calloc,대상 파일: week6/malloc_lab_docker/malloc-lab/mm.c. WEEK6 학습 목표에 따른 추가 구현. 현재 제공된 mm.c와 mm.h에는 calloc이 없으므로 함수명과 선언 및 별도 테스트 범위를 확인한다.
+[C/Malloc Lab] 테스트 - mm.c,mdriver.c와 제공된 trace 파일로 구현 결과를 검증하고 결과를 기록한다. calloc 검증은 별도로 준비한다.
