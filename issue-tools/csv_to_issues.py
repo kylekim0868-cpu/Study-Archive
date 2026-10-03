@@ -29,7 +29,30 @@ def extract_week_number(filename):
     if match:
         return match.group(1)
     return None
+    
+def build_issue_body(title, content):
+    original_content = content.strip()
 
+    if "[CS]" in title:
+        template_name = "cs.md"
+    elif "[Algorithm]" in title:
+        template_name = "problem_solving.md"
+    elif "[Programming]" in title:
+        template_name = "programming.md"
+    elif "[Data Structure]" in title or "[C/Data Structure]" in title:
+        template_name = "data_structure.md"
+    else:
+        return original_content
+
+    template_path = (
+        Path(__file__).resolve().parent / "templates" / template_name
+    )
+    template = template_path.read_text(encoding="utf-8").strip()
+
+    if original_content:
+        return original_content + "\n\n" + template
+
+    return template
 
 def get_existing_issues(repo_owner, repo_name, token):
     """기존 이슈 제목 목록 가져오기 (중복 방지용)"""
@@ -81,8 +104,8 @@ def create_github_issue(repo_owner, repo_name, token, title, content, week_num):
     # 이슈 제목: [WEEK{숫자}] 제목
     issue_title = f"[WEEK{week_num}] {title}"
     
-    # 이슈 본문: content가 있으면 URL만 표시, 없으면 빈 문자열
-    issue_body = content.strip() if content.strip() else ""
+    # 이슈 본문: 기존 내용을 보존하고 제목 유형에 맞는 양식 추가
+    issue_body = build_issue_body(title, content)
     
     data = {
         'title': issue_title,
@@ -160,8 +183,13 @@ def main():
         
         if dry_run:
             print(f"[{idx:2d}/{len(problems)}] {issue_title}")
-            if problem['content']:
-                print(f"         └─ 링크: {problem['content']}")
+            issue_body = build_issue_body(
+                problem["title"],
+                problem["content"]
+            )
+            if issue_body:
+                print(issue_body)
+                print()
             success_count += 1
         else:
             # 중복 체크: 이미 존재하는 이슈면 건너뛰기
