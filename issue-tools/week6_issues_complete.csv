@@ -1,8 +1,35 @@
-title,content
-[WIL] 작성,
-[C/Malloc Lab] 구현 - mm.c / mm_init,대상 파일: week6/malloc_lab_docker/malloc-lab/mm.c. 힙 초기화 구현.
-[C/Malloc Lab] 구현 - mm.c / mm_malloc,대상 파일: week6/malloc_lab_docker/malloc-lab/mm.c. 메모리 할당 구현.
-[C/Malloc Lab] 구현 - mm.c / mm_free,대상 파일: week6/malloc_lab_docker/malloc-lab/mm.c. 메모리 해제 구현.
-[C/Malloc Lab] 구현 - mm.c / mm_realloc,대상 파일: week6/malloc_lab_docker/malloc-lab/mm.c. 메모리 재할당 구현.
-[C/Malloc Lab] 확장 구현 - mm.c / calloc,대상 파일: week6/malloc_lab_docker/malloc-lab/mm.c. WEEK6 학습 목표에 따른 추가 구현. 현재 제공된 mm.c와 mm.h에는 calloc이 없으므로 함수명과 선언 및 별도 테스트 범위를 확인한다.
-[C/Malloc Lab] 테스트 - mm.c,mdriver.c와 제공된 trace 파일로 구현 결과를 검증하고 결과를 기록한다. calloc 검증은 별도로 준비한다.
+title,content,
+[CS] 학습 - 가상메모리 & 페이징,
+[CS] 학습 - 동적메모리할당 (힙 & sbrk & malloc & free),
+[CS] 학습 - 메모리 단편화,
+[CS] 학습 - 메모리 할당 정책 (first fit & next fit & best fit),
+[CS] 학습 - implicit free list & explicit free list,
+[CS] 학습 - demand-zero memory,
+[CS] 학습 - 시스템콜,
+[CS] 학습 - DMA,
+[Programming] 구현 - 가용리스트 조작 매크로,
+[Programming] 구현 - mm_init,
+[Programming] 구현 - extend_heap,
+[Programming] 구현 - mm_free,
+[Programming] 구현 - coalesce,
+[Programming] 구현 - mm_malloc,
+[Programming] 구현 - find_fit (first fit 방식 - first/next 둘중 한개는 필수),
+[Programming] 구현 - find_fit (next fit 방식 - first/next 둘중 한개는 필수),
+[Programming] 구현 - find_fit (옵션: explicit 또는 seglist 방식),
+[Programming] 구현 - place,
+[Programming] 구현 - realloc,
+[Programming] 테스트 - short1-bal.rep -> valid yes,
+[Programming] 테스트 - short2-bal.rep -> valid yes,
+[Programming] 테스트 - amptjp-bal.rep -> valid yes,
+[Programming] 테스트 - cccp-bal.rep -> valid yes,
+[Programming] 테스트 - cp-decl-bal.rep -> valid yes,
+[Programming] 테스트 - expr-bal.rep -> valid yes,
+[Programming] 테스트 - coalescing-bal.rep -> valid yes,
+[Programming] 테스트 - random-bal.rep -> valid yes,
+[Programming] 테스트 - random2-bal.rep -> valid yes,
+[Programming] 테스트 - binary-bal.rep -> valid yes,
+[Programming] 테스트 - binary2-bal.rep -> valid yes,
+[Programming] 테스트 - realloc-bal.rep -> valid yes,
+[Programming] 테스트 - realloc2-bal.rep -> valid yes,
+[Programming] 테스트 - perf index (util),
+[Programming] 테스트 - perf index (thru),
