@@ -105,7 +105,7 @@ static void *coalesce(void *bp)
 }
 
 
-
+/* 힙 확장 */
 static void *extend_heap(size_t words)
 {
     char *bp;
