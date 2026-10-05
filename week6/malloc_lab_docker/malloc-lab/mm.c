@@ -68,11 +68,81 @@ team_t team = {
 #define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE))) // next payload pointer
 #define PREV_BLKP(bp) ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE))) // previous payload pointer
 
+static void *coalesce(void *bp)
+{
+    size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
+    size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
+    size_t size = GET_SIZE(HDRP(bp));
+
+    // Case1) 이전 블록 할당 여부 = 1 이고 다음 블록 할당 여부 = 1
+    if(prev_alloc && next_alloc){ 
+        return bp;
+    }
+
+    // Case2) 이전 블록 할당 여부 = 1 이고 다음 블록 할당 여부 = 0
+    else if(prev_alloc && !next_alloc){ 
+        size += GET_SIZE(HDRP(NEXT_BLKP(bp))); // size = 4096*2 → 이유: NEXT_BLKP는 다음 payload의 시작 주소를 반환
+        PUT(HDRP(bp), PACK(size, 0)); 
+        PUT(FTRP(bp), PACK(size, 0));
+    }
+
+    // Case3) 이전 블록 할당 여부 = 0 이고 다음 블록 할당 여부 = 1
+    else if(!prev_alloc && next_alloc){
+        size += GET_SIZE(HDRP(PREV_BLKP(bp))); // 이전 블록의 헤더 사이즈를 더해준다 값을 size에 저장
+        PUT(FTRP(bp), PACK(size, 0)); // 현재 블록의 푸터 자리에 새 크기
+        PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0)); // 이전 블록의 헤더 자리에 새 크기
+        bp = PREV_BLKP(bp); // bp를 이전 블록으로 갱신
+    }
+
+    else{
+        size += GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(FTRP(NEXT_BLKP(bp))); // 이전+다음 블록 사이즈 더하기. GET_SIZE(FTRP(NEXT_BLKP(bp)) 를 GET_SIZE(ㅗㅇRP(NEXT_BLKP(bp)) 로 바꿔줘도 이상없다.
+        PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0)); // 이전 블록 크기 갱신
+        PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0)); // 다음 블록 크기 갱신
+        bp = PREV_BLKP(bp); // bp를 이전 블록으로 갱신
+    }
+
+    return bp;
+}
+
+
+
+static void *extend_heap(size_t words)
+{
+    char *bp;
+    size_t size;
+    
+    /* Allocate an even number of words to maintain alignment */
+    size = (words % 2) ? (words+1) * WSIZE : words * WSIZE; // heap의 크기를 늘릴 사이즈 홀수/짝수 여부 판단: 홀수 -> (사이즈+1)*4 / 짝수 -> (사이즈)*4 => 8바이트 정렬을 위해
+    if((long)(bp = mem_sbrk(size)) == -1) return NULL; // heap 크기 조절 실패 시 -1 반환
+
+    /* Initialize free block header/footer and the epilogu header */
+    PUT(HDRP(bp), PACK(size, 0)); /* Free block header */
+    PUT(FTRP(bp), PACK(size, 0)); /* Free block footer */
+    PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1)); /* New epilogue header */
+
+    /* Coalesce if the previous block was free */
+    return coalesce(bp);
+}
+
+
 /*
  * mm_init - initialize the malloc package.
  */
 int mm_init(void)
 {
+    char *heap_listp; // char 포인터 자료형 -> payload 시작 주소를 가리키는
+    /* Create the initial empty heap */
+    if((heap_listp = mem_sbrk(4*WSIZE)) == (void *)-1){
+        return -1;
+    }
+    PUT(heap_listp, 0); // bp 초기화
+    PUT(heap_listp + (1*WSIZE), PACK(DSIZE, 1)); // Prologue header bp의 시작 주소를 payload시작 주소로 이동하고 값(9)을 저장 
+    PUT(heap_listp + (2*WSIZE), PACK(DSIZE, 1)); // Prologue footer
+    PUT(heap_listp + (3*WSIZE), PACK(0, 1)); // Epilogue header 
+    heap_listp += (2*WSIZE);
+
+    /* Extend the empty headp with a free block of CHUNKSIZE bytes */
+    if (extend_heap(CHUNKSIZE/WSIZE) == NULL) return -1;
     return 0;
 }
 
@@ -98,6 +168,11 @@ void *mm_malloc(size_t size)
  */
 void mm_free(void *ptr)
 {
+    size_t size = GET_SIZE(HDRP(ptr));
+
+    PUT(HDRP(ptr), PACK(size, 0));
+    PUT(FTRP(ptr), PACK(size, 0));
+    coalesce(ptr);
 }
 
 /*
