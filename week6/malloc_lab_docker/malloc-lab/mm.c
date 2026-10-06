@@ -215,20 +215,39 @@ int mm_init(void)
 }
 
 /*
- * mm_malloc - Allocate a block by incrementing the brk pointer.
- *     Always allocate a block whose size is a multiple of the alignment.
+ * mm_malloc - 필요한 크기를 요청 받으면 공간을 확보하고 가용 블록을 찾아
+ *              가용 블록이 존재한다면 place()후 반환
+ *              가용 블록이 존재하지 않는다면 힙을 확장하고 bp를 place()호출
  */
 void *mm_malloc(size_t size)
 {
-    int newsize = ALIGN(size + SIZE_T_SIZE);
-    void *p = mem_sbrk(newsize);
-    if (p == (void *)-1)
-        return NULL;
-    else
-    {
-        *(size_t *)p = size;
-        return (void *)((char *)p + SIZE_T_SIZE);
+    size_t asize; /* Adjusted block size */
+    size_t extendsize; /* Amouht to extend heap if no fit */
+    char *bp;
+
+    /* Ignore spurious requests */
+    if(size == 0) return NULL;
+
+    /* Adjust block size to include overhead and alignment reqs */
+    if(size <= DSIZE){
+        asize = 2*DSIZE; // 블록 최소 사이즈 16바이트부터 시작
+    }else{
+        asize = DSIZE * ((size+(DSIZE)+(DSIZE-1)) / DSIZE); // ✔︎ 연산식의 의미: payload size + 8바이트(헤더+푸터) + 패딩
     }
+
+    /* Search the free list for a fit */
+    if((bp = find_fit(asize)) != NULL){ // 할당할 블록을 찾으면 place 호출
+        place(bp, asize);
+        return bp;
+    }
+
+    /* No fit found. Get more memory and place the block */
+    extendsize = MAX(asize, CHUNKSIZE); 
+    if((bp = extend_heap(extendsize/WSIZE)) == NULL){ // extendsize/WSIZE는 바이트를 워드로 나타내기 위함
+        return NULL;
+    }
+    place(bp, asize);
+    return bp;
 }
 
 /*
