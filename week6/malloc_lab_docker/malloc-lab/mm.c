@@ -266,17 +266,38 @@ void mm_free(void *ptr)
  */
 void *mm_realloc(void *ptr, size_t size)
 {
+    /*
+        설계)
+            - 기존 공간의 유무와 새 요청 크기를 먼저 판단
+            - case1) 기존 공간이 없다면 새 공간을 할당
+            - case2) 기존 공간이 있고 요청 크기가 0 → 기존 공간을 해제하고 NULL 반환
+            - case3) 기존 공간이 있고 요청 크기가 0보다 크다면 → 새 공간 확보 후 필요한 범위만 복사한 뒤 기존 공간 해제
+    */
     void *oldptr = ptr;
     void *newptr;
     size_t copySize;
 
-    newptr = mm_malloc(size);
-    if (newptr == NULL)
+    // 기존 공간이 없다면 새 공간 할당
+    if(oldptr == NULL){
+        newptr = mm_malloc(size);
+        return newptr;
+    }
+    
+    // 기존 공간이 있고 요청 크기가 0
+    if(oldptr != NULL && (size == 0)){
+        mm_free(oldptr); // ★ 요청 크기가 0인데 왜 free를 해야 할까? → size = 0은 이 공간을 사용하지 않겠다라는 의미이기 때문에 기존 공간은 사용가능하게 가용 블록으로 교체
         return NULL;
-    copySize = *(size_t *)((char *)oldptr - SIZE_T_SIZE);
-    if (size < copySize)
-        copySize = size;
-    memcpy(newptr, oldptr, copySize);
-    mm_free(oldptr);
-    return newptr;
+    }
+    
+    if(oldptr != NULL && (size > 0)){
+        newptr = mm_malloc(size);
+        if(newptr == NULL) return NULL;
+        copySize = GET_SIZE(HDRP(oldptr)) - DSIZE; // payload 데이터 크기 = 헤더에 기록된 블록 전체 크기 - 8바이트(헤더+푸터)
+        if(size < copySize) 
+            copySize = size;
+        memcpy(newptr, oldptr, copySize);
+        mm_free(oldptr);
+        return newptr;
+    }
+
 }
