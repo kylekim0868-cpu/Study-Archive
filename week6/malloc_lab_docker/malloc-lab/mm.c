@@ -68,6 +68,8 @@ team_t team = {
 #define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE))) // next payload pointer
 #define PREV_BLKP(bp) ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE))) // previous payload pointer
 
+static char *heap_listp;
+
 /* 4가지 free 케이스! */
 static void *coalesce(void *bp)
 {
@@ -125,13 +127,78 @@ static void *extend_heap(size_t words)
     return coalesce(bp);
 }
 
+/*
+* find_fit - 처음 블록부터 순회를 돌면서 크기가 맞는 블록을 찾는다.
+*/
+static void *find_fit(size_t asize)
+{
+    /*
+        설계)
+            - 필요한 변수
+                → 각 블록을 이동할 포인터 char *bp; 블록 사이즈 asize;
+            - bp 선언 char *bp;
+            - ✔︎ bp를 초기화를 어떻게 하지? → 첫 블록의 payload의 값을 가져오면 문제 없을텐데?
+                -> 초기화가 필요 없이 heap_listp를 사용해서 사이즈를 안다는 전제 하에 블록을 순회할 수 있다.
+            - 순회해야 하는데 순회 범위는? → 헤더블록의 크기가 0보다 클 때까지 순회
+            - 순회 종료 조건은 GET_ALLOC() = 0 && GET_SIZE(bp-WSIZE) >= asize 이면 return bp; 하고 종료
+    */
+    char *bp;
+    bp = heap_listp;
+
+    while(GET_SIZE(bp - WSIZE) > 0){
+        if(GET_ALLOC(bp - WSIZE) == 0 && GET_SIZE(bp - WSIZE) >= asize){
+            return bp;
+        }    
+        bp = NEXT_BLKP(bp);    
+    }
+    return NULL;
+}
+
+/*
+* place() - 가용 블록을 할당하고 남은 블록을 분할하는 함수
+*/
+static void place(void *bp, size_t asize)
+{
+    /*
+        설계)
+            - 인자 *bp = 가용 가능한 블록의 payload 시작 주소
+            - 인자 asize = 할당할 size
+            - 필요한 변수 
+                → size_t csize: 분할하기 전 전체 사이즈
+            - csize에 GET_SIZE(HDRP(bp)) 대입
+            - 분할 조건: 가용 가능한 전체 사이즈 - 할당할 사이즈 >= DSIZE*2 보다 크다면 분할
+                - 조건O: 현재 할당할 블록의 헤더 크기 및 할당 여부 갱신
+                    → PUT(HDRP(bp), PACK(asize, 1)); // 헤더에 할당할 크기로 갱신
+                    → PUT(FTRP(bp), PACK(asize, 1); // 푸터에 할당할 크기로 갱신
+                    → bp = NEXT_BLKP(bp); // bp를 분할할 다음 블록의 payload 주소로 갱신
+                    → PUT(HDRP(bp), PACK(csize-asize, 0)); // 헤더에 csize-asize 크기, 할당 여부 = 0 으로 갱신
+                    → PUT(FTRP(bp), PACK(csize-asize, 0)); // 푸터에 csize-asize 크기, 할당 여부 = 0 으로 갱신
+                - 조건X: 분할 X
+                    → 갱신 필요가 없다. asize 대신 csize 그대로 사용. 대신 할당 여부만 1로 갱신
+                    → PUT(HDRP(bp), PACK(csize, 1));
+                    → PUT(FTRP(bp), PACK(csize, 1));
+    */
+
+    size_t csize = GET_SIZE(HDRP(bp));
+
+    if((csize - asize) >= DSIZE*2){ // ★ 왜 16바이트가 분할할 수 있는 최소 바이트일까?
+        PUT(HDRP(bp), PACK(asize, 1));
+        PUT(FTRP(bp), PACK(asize, 1));
+        bp = NEXT_BLKP(bp);
+        PUT(HDRP(bp), PACK(csize-asize, 0));
+        PUT(FTRP(bp), PACK(csize-asize, 0));
+    }else{
+        PUT(HDRP(bp), PACK(csize, 1));
+        PUT(FTRP(bp), PACK(csize, 1));
+    }
+}
+
 
 /*
  * mm_init - initialize the malloc package.
  */
 int mm_init(void)
 {
-    char *heap_listp; // char 포인터 자료형 -> payload 시작 주소를 가리키는
     /* Create the initial empty heap */
     if((heap_listp = mem_sbrk(4*WSIZE)) == (void *)-1){
         return -1;
