@@ -135,7 +135,8 @@ def combinations(n: int, k: int) -> list:
         # ──────────────────────────────────────────────────────────────────
         pass  
         if len(current_combination) == k:
-            result.append(current_combination)
+            temp = current_combination.copy() # copy()는 별도의 리스트를 하나 추가한다. 원본의 쓰기 작업이 복사본의 데이터에 영향을 끼치지 않는다.
+            result.append(temp) # ★ 핵심 동작: append는 current_combination의 내용을 복사해서 저장하지 않는다.
             return
         # ──────────────────────────────────────────────────────────────────
         # [Level 2] 가지치기 반복문
